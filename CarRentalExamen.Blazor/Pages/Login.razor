@@ -1,0 +1,41 @@
+@page "/login"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Login</PageTitle>
+
+<h3>Sign in</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <InputText class="form-control" @bind-Value="loginModel.Username" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <InputText type="password" class="form-control" @bind-Value="loginModel.Password" />
+    </div>
+    <button class="btn btn-primary" type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginRequestDto loginModel = new();
+    private string? error;
+
+    private async Task HandleLogin()
+    {
+        error = null;
+        var result = await Api.LoginAsync(loginModel);
+        if (result is null)
+        {
+            error = "Invalid username or password.";
+            return;
+        }
+        Navigation.NavigateTo("/");
+    }
+}

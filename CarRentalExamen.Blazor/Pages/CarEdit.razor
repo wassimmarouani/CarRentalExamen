@@ -1,0 +1,90 @@
+@page "/cars/edit"
+@page "/cars/edit/{id:int}"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Car</PageTitle>
+
+<h3>@(id.HasValue ? "Edit Car" : "Add Car")</h3>
+
+<EditForm Model="carModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Make</label>
+                <InputText class="form-control" @bind-Value="carModel.Make" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Model</label>
+                <InputText class="form-control" @bind-Value="carModel.Model" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Year</label>
+                <InputNumber class="form-control" @bind-Value="carModel.Year" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Plate Number</label>
+                <InputText class="form-control" @bind-Value="carModel.PlateNumber" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Daily Price</label>
+                <InputNumber class="form-control" @bind-Value="carModel.DailyPrice" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Image Url</label>
+                <InputText class="form-control" @bind-Value="carModel.ImageUrl" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mileage</label>
+                <InputNumber class="form-control" @bind-Value="carModel.Mileage" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <InputSelect class="form-select" @bind-Value="carModel.Status">
+                    @foreach (var status in Enum.GetValues<CarStatus>())
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-success" type="submit">Save</button>
+    <button class="btn btn-link" type="button" @onclick="@(() => Navigation.NavigateTo("/cars"))">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+    private CarCreateUpdateDto carModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (id.HasValue)
+        {
+            var car = await Api.GetCarAsync(id.Value);
+            if (car != null)
+            {
+                carModel = new CarCreateUpdateDto
+                {
+                    Make = car.Make,
+                    Model = car.Model,
+                    Year = car.Year,
+                    PlateNumber = car.PlateNumber,
+                    DailyPrice = car.DailyPrice,
+                    ImageUrl = car.ImageUrl,
+                    Mileage = car.Mileage,
+                    Status = car.Status
+                };
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await Api.SaveCarAsync(id, carModel);
+        Navigation.NavigateTo("/cars");
+    }
+}

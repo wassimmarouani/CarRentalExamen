@@ -1,0 +1,17 @@
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.deps.json
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.runtimeconfig.json
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Core.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Core.pdb
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.AssemblyInfo.cs
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRenta.61762E90.Up2Date
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\refint\CarRentalExamen.Infrastructure.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.genruntimeconfig.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\ref\CarRentalExamen.Infrastructure.dll

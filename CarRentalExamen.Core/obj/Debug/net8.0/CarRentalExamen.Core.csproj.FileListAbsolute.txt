@@ -1,0 +1,11 @@
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\bin\Debug\net8.0\CarRentalExamen.Core.deps.json
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\bin\Debug\net8.0\CarRentalExamen.Core.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\bin\Debug\net8.0\CarRentalExamen.Core.pdb
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.AssemblyInfoInputs.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.AssemblyInfo.cs
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.csproj.CoreCompileInputs.cache
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\refint\CarRentalExamen.Core.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.pdb
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\ref\CarRentalExamen.Core.dll

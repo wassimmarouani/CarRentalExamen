@@ -1,0 +1,57 @@
+@page "/cars/details/{id:int}"
+@inject ApiClient Api
+
+<PageTitle>Car Details</PageTitle>
+
+@if (car is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="mb-3">
+        <h3>@car.Make @car.Model (@car.Year)</h3>
+        <p><strong>Plate:</strong> @car.PlateNumber</p>
+        <p><strong>Status:</strong> @car.Status</p>
+        <p><strong>Daily Price:</strong> $@car.DailyPrice</p>
+        <p><strong>Mileage:</strong> @car.Mileage km</p>
+    </div>
+
+    <h5>Reservations</h5>
+    @if (car.Reservations is null || !car.Reservations.Any())
+    {
+        <p>No reservations yet.</p>
+    }
+    else
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Dates</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var res in car.Reservations)
+                {
+                    <tr>
+                        <td>@res.Customer?.FirstName @res.Customer?.LastName</td>
+                        <td>@res.StartDate.ToShortDateString() - @res.EndDate.ToShortDateString()</td>
+                        <td>@res.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Car? car;
+
+    protected override async Task OnInitializedAsync()
+    {
+        car = await Api.GetCarAsync(id);
+    }
+}

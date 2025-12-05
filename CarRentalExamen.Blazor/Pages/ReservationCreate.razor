@@ -1,0 +1,131 @@
+@page "/reservations/create"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Create Reservation</PageTitle>
+
+<h3>Create Reservation</h3>
+
+@if (cars is null || customers is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    <EditForm Model="model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Car</label>
+                    <InputSelect class="form-select" @bind-Value="model.CarId">
+                        <option value="0">-- Select car --</option>
+                        @foreach (var car in cars)
+                        {
+                            <option value="@car.Id">@car.Make @car.Model (@car.PlateNumber)</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Customer</label>
+                    <InputSelect class="form-select" @bind-Value="model.CustomerId">
+                        <option value="0">-- Select customer --</option>
+                        @foreach (var customer in customers)
+                        {
+                            <option value="@customer.Id">@customer.FirstName @customer.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Start Date</label>
+                    <InputDate class="form-control" @bind-Value="model.StartDate" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">End Date</label>
+                    <InputDate class="form-control" @bind-Value="model.EndDate" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Options</h5>
+                @foreach (var option in optionItems)
+                {
+                    <div class="border rounded p-2 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <strong>@option.Name</strong>
+                            <span>$@option.PricePerDay / day</span>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label">Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="option.Quantity" />
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <button class="btn btn-success" type="submit">Create</button>
+        <button class="btn btn-link" type="button" @onclick="@(() => Navigation.NavigateTo("/reservations"))">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private ReservationCreateDto model = new()
+    {
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Today.AddDays(1)
+    };
+    private List<Car>? cars;
+    private List<Customer>? customers;
+    private string? error;
+
+    private List<OptionItem> optionItems = new()
+    {
+        new("GPS", 5),
+        new("Baby Seat", 7),
+        new("Insurance", 15)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        cars = await Api.GetCarsAsync(CarStatus.Available);
+        customers = await Api.GetCustomersAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        error = null;
+        if (model.CarId == 0 || model.CustomerId == 0)
+        {
+            error = "Car and customer are required.";
+            return;
+        }
+
+        model.Options = optionItems
+            .Where(o => o.Quantity > 0)
+            .Select(o => new ReservationOptionDto
+            {
+                OptionName = o.Name,
+                PricePerDay = o.PricePerDay,
+                Quantity = o.Quantity
+            }).ToList();
+
+        await Api.CreateReservationAsync(model);
+        Navigation.NavigateTo("/reservations");
+    }
+
+    private class OptionItem
+    {
+        public OptionItem(string name, decimal pricePerDay)
+        {
+            Name = name;
+            PricePerDay = pricePerDay;
+        }
+
+        public string Name { get; set; }
+        public decimal PricePerDay { get; set; }
+        public int Quantity { get; set; }
+    }
+}

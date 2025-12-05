@@ -1,0 +1,57 @@
+@page "/customers/details/{id:int}"
+@inject ApiClient Api
+
+<PageTitle>Customer Details</PageTitle>
+
+@if (customer is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <h3>@customer.FirstName @customer.LastName</h3>
+    <p><strong>CIN/Passport:</strong> @customer.CinOrPassport</p>
+    <p><strong>License:</strong> @customer.LicenseNumber</p>
+    <p><strong>Phone:</strong> @customer.Phone</p>
+    <p><strong>Email:</strong> @customer.Email</p>
+
+    <h5>Reservations</h5>
+    @if (reservations.Count == 0)
+    {
+        <p>No reservations yet.</p>
+    }
+    else
+    {
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Car</th>
+                <th>Dates</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in reservations)
+            {
+                <tr>
+                    <td>@r.CarId</td>
+                    <td>@r.StartDate.ToShortDateString() - @r.EndDate.ToShortDateString()</td>
+                    <td>@r.Status</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Customer? customer;
+    private List<Reservation> reservations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        customer = await Api.GetCustomerAsync(id);
+        reservations = await Api.GetCustomerReservationsAsync(id);
+    }
+}

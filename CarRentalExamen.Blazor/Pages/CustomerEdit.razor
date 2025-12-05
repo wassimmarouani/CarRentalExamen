@@ -1,0 +1,75 @@
+@page "/customers/edit"
+@page "/customers/edit/{id:int}"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Customer</PageTitle>
+
+<h3>@(id.HasValue ? "Edit Customer" : "Add Customer")</h3>
+
+<EditForm Model="customerModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">First name</label>
+                <InputText class="form-control" @bind-Value="customerModel.FirstName" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Last name</label>
+                <InputText class="form-control" @bind-Value="customerModel.LastName" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">CIN/Passport</label>
+                <InputText class="form-control" @bind-Value="customerModel.CinOrPassport" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">License Number</label>
+                <InputText class="form-control" @bind-Value="customerModel.LicenseNumber" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Phone</label>
+                <InputText class="form-control" @bind-Value="customerModel.Phone" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText class="form-control" @bind-Value="customerModel.Email" />
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-success" type="submit">Save</button>
+    <button class="btn btn-link" type="button" @onclick="@(() => Navigation.NavigateTo("/customers"))">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+    private CustomerCreateUpdateDto customerModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (id.HasValue)
+        {
+            var customer = await Api.GetCustomerAsync(id.Value);
+            if (customer != null)
+            {
+                customerModel = new CustomerCreateUpdateDto
+                {
+                    FirstName = customer.FirstName,
+                    LastName = customer.LastName,
+                    CinOrPassport = customer.CinOrPassport,
+                    LicenseNumber = customer.LicenseNumber,
+                    Phone = customer.Phone,
+                    Email = customer.Email
+                };
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await Api.SaveCustomerAsync(id, customerModel);
+        Navigation.NavigateTo("/customers");
+    }
+}

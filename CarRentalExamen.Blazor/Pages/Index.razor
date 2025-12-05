@@ -1,0 +1,82 @@
+@page "/"
+@inject ApiClient Api
+
+<PageTitle>Dashboard</PageTitle>
+
+<h3>Dashboard</h3>
+
+@if (requiresLogin)
+{
+    <div class="alert alert-info">Please login to view dashboard data.</div>
+}
+else if (stats is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card text-bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <p class="card-text display-6">$@stats.Revenue</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Active Rentals</h5>
+                    <p class="card-text display-6">@stats.ActiveRentals</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Available Cars</h5>
+                    <p class="card-text display-6">@stats.AvailableCars</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h5>Rentals per month</h5>
+            <ul class="list-group">
+                @foreach (var item in stats.RentalsPerMonth)
+                {
+                    <li class="list-group-item">@($"{item.Month}/{item.Year} - {item.Count}")</li>
+                }
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h5>Top cars</h5>
+            <ul class="list-group">
+                @foreach (var item in stats.TopCars)
+                {
+                    <li class="list-group-item">@($"{item.Car} - {item.Count} rentals")</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@code {
+    private DashboardStats? stats;
+    private bool requiresLogin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await Api.GetCurrentTokenAsync();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            requiresLogin = true;
+            return;
+        }
+
+        stats = await Api.GetDashboardAsync();
+    }
+}

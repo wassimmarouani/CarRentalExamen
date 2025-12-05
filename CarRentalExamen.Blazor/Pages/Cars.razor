@@ -1,0 +1,104 @@
+@page "/cars"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Cars</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Cars</h3>
+    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/cars/edit")'>Add Car</button>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Filter by status</label>
+    <select class="form-select" @onchange="OnStatusChange">
+        <option value="">All</option>
+        @foreach (var s in Enum.GetValues<CarStatus>())
+        {
+            <option value="@s">@s</option>
+        }
+    </select>
+</div>
+
+@if (cars is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Plate</th>
+                <th>Model</th>
+                <th>Price / day</th>
+                <th>Status</th>
+                <th>Mileage</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var car in cars)
+            {
+                <tr>
+                    <td>@car.PlateNumber</td>
+                    <td>@car.Make @car.Model (@car.Year)</td>
+                    <td>$@car.DailyPrice</td>
+                    <td>
+                        <select class="form-select form-select-sm" @onchange="e => StatusChanged(e, car.Id)">
+                            @foreach (var s in Enum.GetValues<CarStatus>())
+                            {
+                                <option value="@s" selected="@(s == car.Status)">@s</option>
+                            }
+                        </select>
+                    </td>
+                    <td>@car.Mileage km</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>Details</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick='() => Delete(car.Id)'>Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Car>? cars;
+    private CarStatus? currentStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCars();
+    }
+
+    private async Task LoadCars()
+    {
+        cars = await Api.GetCarsAsync(currentStatus);
+    }
+
+    private async Task OnStatusChange(ChangeEventArgs e)
+    {
+        currentStatus = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Enum.Parse<CarStatus>(e.Value!.ToString()!);
+        await LoadCars();
+    }
+
+    private async Task Delete(int id)
+    {
+        await Api.DeleteCarAsync(id);
+        await LoadCars();
+    }
+
+    private async Task UpdateStatus(int id, CarStatus status)
+    {
+        await Api.UpdateCarStatusAsync(id, status);
+        await LoadCars();
+    }
+
+    private async Task StatusChanged(ChangeEventArgs e, int carId)
+    {
+        var parsed = Enum.TryParse<CarStatus>(e.Value?.ToString(), out var status) ? status : CarStatus.Available;
+        await UpdateStatus(carId, parsed);
+    }
+}

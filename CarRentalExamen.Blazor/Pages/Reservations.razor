@@ -1,0 +1,73 @@
+@page "/reservations"
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Reservations</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Reservations</h3>
+    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/reservations/create")'>Create</button>
+</div>
+
+@if (reservations is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Car</th>
+                <th>Customer</th>
+                <th>Period</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in reservations)
+            {
+                <tr>
+                    <td>@r.Car</td>
+                    <td>@r.Customer</td>
+                    <td>@r.StartDate.ToShortDateString() - @r.EndDate.ToShortDateString()</td>
+                    <td><span class="badge bg-secondary">@r.Status</span></td>
+                    <td>$@r.TotalPrice</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick='() => Navigation.NavigateTo($"/reservations/details/{r.Id}")'>Details</button>
+                        <button class="btn btn-sm btn-outline-success me-1" @onclick='() => Confirm(r.Id)'>Confirm</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick='() => Cancel(r.Id)'>Cancel</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ReservationDetailDto>? reservations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        reservations = await Api.GetReservationsAsync();
+    }
+
+    private async Task Confirm(int id)
+    {
+        await Api.ConfirmReservationAsync(id);
+        await Load();
+    }
+
+    private async Task Cancel(int id)
+    {
+        await Api.CancelReservationAsync(id);
+        await Load();
+    }
+}

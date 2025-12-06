@@ -1,5 +1,5 @@
 using CarRentalExamen.Core.Entities;
-using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces.Services;
 using CarRentalExamen.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,87 +7,44 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.API.Controllers;
 
+/// <summary>
+/// Returns controller - handles car return operations
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class ReturnsController : ControllerBase
 {
+    private readonly IReservationService _reservationService;
     private readonly AppDbContext _context;
 
-    public ReturnsController(AppDbContext context)
+    public ReturnsController(IReservationService reservationService, AppDbContext context)
     {
+        _reservationService = reservationService;
         _context = context;
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ReturnRequest request)
     {
-        var reservation = await _context.Reservations
-            .Include(r => r.Car)
-            .Include(r => r.Return)
-            .FirstOrDefaultAsync(r => r.Id == request.ReservationId);
+        var serviceRequest = new CompleteReservationRequest
+        {
+            ReturnDate = request.ReturnDate,
+            ReturnMileage = request.ReturnMileage,
+            ReturnFuelLevel = request.ReturnFuelLevel,
+            LateFees = request.LateFees,
+            DamageFees = request.DamageFees,
+            FuelFees = request.FuelFees,
+            Notes = request.Notes
+        };
 
-        if (reservation is null) return NotFound("Reservation not found");
-
-        // Validate reservation is in a state that can be returned
-        if (reservation.Status == ReservationStatus.Completed)
+        var (success, error) = await _reservationService.CompleteAsync(request.ReservationId, serviceRequest);
+        if (!success)
         {
-            return BadRequest("Reservation is already completed.");
-        }
-        if (reservation.Status == ReservationStatus.Cancelled)
-        {
-            return BadRequest("Cannot return a cancelled reservation.");
-        }
-        if (reservation.Status == ReservationStatus.Pending)
-        {
-            return BadRequest("Reservation must be picked up before it can be returned.");
+            return error == "Reservation not found." ? NotFound(error) : BadRequest(error);
         }
 
-        // Validate fees are non-negative
-        if (request.LateFees.HasValue && request.LateFees.Value < 0)
-        {
-            return BadRequest("Late fees cannot be negative.");
-        }
-        if (request.DamageFees.HasValue && request.DamageFees.Value < 0)
-        {
-            return BadRequest("Damage fees cannot be negative.");
-        }
-        if (request.FuelFees.HasValue && request.FuelFees.Value < 0)
-        {
-            return BadRequest("Fuel fees cannot be negative.");
-        }
-
-        var returnDate = request.ReturnDate ?? DateTime.UtcNow;
-        var daysLate = returnDate.Date > reservation.EndDate.Date ? (returnDate.Date - reservation.EndDate.Date).Days : 0;
-        var lateFees = request.LateFees ?? (daysLate * 20m);
-        var fuelFees = request.FuelFees ?? CalculateFuelFee(reservation.PickupFuelLevel, request.ReturnFuelLevel);
-        var damageFees = request.DamageFees ?? 0;
-        var totalExtra = lateFees + fuelFees + damageFees;
-
-        var returnEntity = reservation.Return ?? new Return { ReservationId = reservation.Id };
-        returnEntity.ReturnDate = returnDate;
-        returnEntity.LateFees = lateFees;
-        returnEntity.DamageFees = damageFees;
-        returnEntity.FuelFees = fuelFees;
-        returnEntity.TotalExtraFees = totalExtra;
-        returnEntity.Notes = request.Notes;
-
-        reservation.Return = returnEntity;
-        reservation.Status = ReservationStatus.Completed;
-        reservation.ReturnedAt = returnDate;
-        reservation.ReturnMileage = request.ReturnMileage;
-        reservation.ReturnFuelLevel = request.ReturnFuelLevel;
-
-        if (reservation.Car is not null)
-        {
-            reservation.Car.Status = CarStatus.Available;
-            if (request.ReturnMileage.HasValue)
-            {
-                reservation.Car.Mileage = request.ReturnMileage.Value;
-            }
-        }
-
-        await _context.SaveChangesAsync();
+        var returnEntity = await _context.Returns.FirstOrDefaultAsync(r => r.ReservationId == request.ReservationId);
         return Ok(returnEntity);
     }
 
@@ -97,16 +54,6 @@ public class ReturnsController : ControllerBase
         var returnEntity = await _context.Returns.FirstOrDefaultAsync(r => r.ReservationId == reservationId);
         if (returnEntity is null) return NotFound();
         return Ok(returnEntity);
-    }
-
-    private static decimal CalculateFuelFee(decimal? pickupFuel, decimal? returnFuel)
-    {
-        if (pickupFuel.HasValue && returnFuel.HasValue)
-        {
-            var diff = pickupFuel.Value - returnFuel.Value;
-            return diff > 0 ? diff * 30m : 0;
-        }
-        return 0;
     }
 
     public class ReturnRequest

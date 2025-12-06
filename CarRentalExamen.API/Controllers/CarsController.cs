@@ -1,36 +1,32 @@
 using CarRentalExamen.Core.DTOs.Cars;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Enums;
-using CarRentalExamen.Infrastructure.Data;
+using CarRentalExamen.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.API.Controllers;
 
+/// <summary>
+/// Cars controller - thin controller that delegates to CarService
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class CarsController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ICarService _carService;
 
-    public CarsController(AppDbContext context)
+    public CarsController(ICarService carService)
     {
-        _context = context;
+        _carService = carService;
     }
 
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<Car>>> GetAll([FromQuery] CarStatus? status)
     {
-        var query = _context.Cars.AsQueryable();
-        if (status.HasValue)
-        {
-            query = query.Where(c => c.Status == status);
-        }
-
-        var cars = await query.AsNoTracking().ToListAsync();
+        var cars = await _carService.GetAllAsync(status);
         return Ok(cars);
     }
 
@@ -38,11 +34,7 @@ public class CarsController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<Car>> GetById(int id)
     {
-        var car = await _context.Cars
-            .Include(c => c.Reservations)
-            .ThenInclude(r => r.Customer)
-            .FirstOrDefaultAsync(c => c.Id == id);
-
+        var car = await _carService.GetByIdWithReservationsAsync(id);
         if (car is null) return NotFound();
         return Ok(car);
     }
@@ -50,90 +42,44 @@ public class CarsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Car>> Create([FromBody] CarCreateUpdateDto dto)
     {
-        if (await _context.Cars.AnyAsync(c => c.PlateNumber == dto.PlateNumber))
+        var (success, error, car) = await _carService.CreateAsync(dto);
+        if (!success)
         {
-            return Conflict("Plate number already exists.");
+            return Conflict(error);
         }
-
-        var car = new Car
-        {
-            Make = dto.Make,
-            Model = dto.Model,
-            Year = dto.Year,
-            PlateNumber = dto.PlateNumber,
-            DailyPrice = dto.DailyPrice,
-            ImageUrl = dto.ImageUrl,
-            Mileage = dto.Mileage,
-            Status = dto.Status
-        };
-        _context.Cars.Add(car);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = car.Id }, car);
+        return CreatedAtAction(nameof(GetById), new { id = car!.Id }, car);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CarCreateUpdateDto dto)
     {
-        var car = await _context.Cars.FindAsync(id);
-        if (car is null) return NotFound();
-
-        if (car.PlateNumber != dto.PlateNumber &&
-            await _context.Cars.AnyAsync(c => c.PlateNumber == dto.PlateNumber))
+        var (success, error) = await _carService.UpdateAsync(id, dto);
+        if (!success)
         {
-            return Conflict("Plate number already exists.");
+            return error == "Car not found." ? NotFound() : Conflict(error);
         }
-
-        car.Make = dto.Make;
-        car.Model = dto.Model;
-        car.Year = dto.Year;
-        car.PlateNumber = dto.PlateNumber;
-        car.DailyPrice = dto.DailyPrice;
-        car.ImageUrl = dto.ImageUrl;
-        car.Mileage = dto.Mileage;
-        car.Status = dto.Status;
-
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var car = await _context.Cars.Include(c => c.Reservations).FirstOrDefaultAsync(c => c.Id == id);
-        if (car is null) return NotFound();
-
-        var hasActiveReservation = car.Reservations.Any(r =>
-            r.Status == ReservationStatus.Pending ||
-            r.Status == ReservationStatus.Confirmed ||
-            r.Status == ReservationStatus.Active);
-        if (hasActiveReservation)
+        var (success, error) = await _carService.DeleteAsync(id);
+        if (!success)
         {
-            return BadRequest("Cannot delete car with active reservations.");
+            return error == "Car not found." ? NotFound() : BadRequest(error);
         }
-
-        _context.Cars.Remove(car);
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpPut("{id:int}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] CarStatus status)
     {
-        var car = await _context.Cars.Include(c => c.Reservations).FirstOrDefaultAsync(c => c.Id == id);
-        if (car is null) return NotFound();
-
-        // Prevent setting to Available if car has active reservations
-        var hasActiveReservation = car.Reservations.Any(r =>
-            r.Status == ReservationStatus.Active ||
-            r.Status == ReservationStatus.Confirmed);
-
-        if (status == CarStatus.Available && hasActiveReservation)
+        var (success, error) = await _carService.UpdateStatusAsync(id, status);
+        if (!success)
         {
-            return BadRequest("Cannot set car to Available while it has active or confirmed reservations.");
+            return error == "Car not found." ? NotFound() : BadRequest(error);
         }
-
-        car.Status = status;
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 }

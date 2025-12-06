@@ -1,36 +1,37 @@
 using CarRentalExamen.Core.DTOs.Customers;
 using CarRentalExamen.Core.Entities;
-using CarRentalExamen.Core.Enums;
-using CarRentalExamen.Infrastructure.Data;
+using CarRentalExamen.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.API.Controllers;
 
+/// <summary>
+/// Customers controller - thin controller that delegates to CustomerService
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class CustomersController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ICustomerService _customerService;
 
-    public CustomersController(AppDbContext context)
+    public CustomersController(ICustomerService customerService)
     {
-        _context = context;
+        _customerService = customerService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Customer>>> GetAll()
     {
-        var customers = await _context.Customers.AsNoTracking().ToListAsync();
+        var customers = await _customerService.GetAllAsync();
         return Ok(customers);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Customer>> GetById(int id)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var customer = await _customerService.GetByIdAsync(id);
         if (customer is null) return NotFound();
         return Ok(customer);
     }
@@ -38,70 +39,39 @@ public class CustomersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Customer>> Create([FromBody] CustomerCreateUpdateDto dto)
     {
-        var customer = new Customer
-        {
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            CinOrPassport = dto.CinOrPassport,
-            LicenseNumber = dto.LicenseNumber,
-            Phone = dto.Phone,
-            Email = dto.Email
-        };
-        _context.Customers.Add(customer);
-        await _context.SaveChangesAsync();
+        var customer = await _customerService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CustomerCreateUpdateDto dto)
     {
-        var customer = await _context.Customers.FindAsync(id);
-        if (customer is null) return NotFound();
-
-        customer.FirstName = dto.FirstName;
-        customer.LastName = dto.LastName;
-        customer.CinOrPassport = dto.CinOrPassport;
-        customer.LicenseNumber = dto.LicenseNumber;
-        customer.Phone = dto.Phone;
-        customer.Email = dto.Email;
-
-        await _context.SaveChangesAsync();
+        var (success, error) = await _customerService.UpdateAsync(id, dto);
+        if (!success)
+        {
+            return error == "Customer not found." ? NotFound() : BadRequest(error);
+        }
         return NoContent();
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var customer = await _context.Customers.Include(c => c.Reservations).FirstOrDefaultAsync(c => c.Id == id);
-        if (customer is null) return NotFound();
-
-        // Only block deletion if there are active/pending reservations
-        var hasActiveReservations = customer.Reservations.Any(r =>
-            r.Status == ReservationStatus.Pending ||
-            r.Status == ReservationStatus.Confirmed ||
-            r.Status == ReservationStatus.Active);
-
-        if (hasActiveReservations)
+        var (success, error) = await _customerService.DeleteAsync(id);
+        if (!success)
         {
-            return BadRequest("Cannot delete customer with active reservations.");
+            return error == "Customer not found." ? NotFound() : BadRequest(error);
         }
-
-        _context.Customers.Remove(customer);
-        await _context.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpGet("{id:int}/reservations")]
     public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations(int id)
     {
-        var exists = await _context.Customers.AnyAsync(c => c.Id == id);
-        if (!exists) return NotFound();
+        var customer = await _customerService.GetByIdAsync(id);
+        if (customer is null) return NotFound();
 
-        var reservations = await _context.Reservations
-            .Include(r => r.Car)
-            .Where(r => r.CustomerId == id)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync();
+        var reservations = await _customerService.GetReservationsAsync(id);
         return Ok(reservations);
     }
 }

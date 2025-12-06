@@ -1,5 +1,6 @@
 using System.Text;
 using CarRentalExamen.Core.Interfaces;
+using CarRentalExamen.Core.Interfaces.Services;
 using CarRentalExamen.Infrastructure.Auth;
 using CarRentalExamen.Infrastructure.Data;
 using CarRentalExamen.Infrastructure.Repositories;
@@ -49,9 +50,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 // builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Services - following Dependency Inversion Principle
+// Infrastructure Services - following Dependency Inversion Principle
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+// Application Services - Business Logic Layer
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddCors(options =>
 {

@@ -1,0 +1,183 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@layout AuthLayout
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Register</PageTitle>
+
+<div class="auth-grid">
+    <div class="auth-aside">
+        <div class="pill mb-3">
+            <span class="pulse-dot"></span>
+            New access badge
+        </div>
+        <h2 class="mb-2">Create your operator profile</h2>
+        <p class="mb-3">Provision a fresh account to unlock the dashboard, edit the fleet, and approve or cancel reservations.</p>
+        <div class="auth-bullets">
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Full control</div>
+                    <div class="small">Add, edit, or retire cars with status changes.</div>
+                </div>
+            </div>
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Customer-ready</div>
+                    <div class="small">Capture drivers, payments, and rental history.</div>
+                </div>
+            </div>
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Secure tokens</div>
+                    <div class="small">Local token storage with instant sign out.</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-strip">
+            <div class="stat-chip">Add vehicles</div>
+            <div class="stat-chip">Schedule rentals</div>
+            <div class="stat-chip">Collect payments</div>
+        </div>
+    </div>
+
+    <div class="auth-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <div class="eyebrow">Register</div>
+                <h4 class="mb-0">Craft your login</h4>
+                <div class="auth-subtext small">You will land on the dashboard right after.</div>
+            </div>
+            <div class="text-end auth-subtext small">
+                Already joined?
+                <a href="/login">Sign in</a>
+            </div>
+        </div>
+
+        <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="pt-2">
+            <DataAnnotationsValidator />
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert soft-alert">@error</div>
+            }
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <div class="input-shell">
+                    <span class="input-icon">ID</span>
+                    <InputText class="form-control" @bind-Value="registerModel.Username" autocomplete="username" />
+                </div>
+                <ValidationMessage For="@(() => registerModel.Username)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-shell">
+                    <span class="input-icon">&#64;</span>
+                    <InputText type="email" class="form-control" @bind-Value="registerModel.Email" autocomplete="email" />
+                </div>
+                <ValidationMessage For="@(() => registerModel.Email)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-shell">
+                    <span class="input-icon">PW</span>
+                    <InputText type="password" class="form-control" @bind-Value="registerModel.Password" autocomplete="new-password" />
+                </div>
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-shell">
+                    <span class="input-icon">PW</span>
+                    <InputText type="password" class="form-control" @bind-Value="confirmPassword" autocomplete="new-password" />
+                </div>
+                @if (!string.IsNullOrEmpty(confirmPasswordError))
+                {
+                    <div class="text-danger small mt-1">@confirmPasswordError</div>
+                }
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Create account
+            </button>
+        </EditForm>
+
+        <div class="auth-footer small text-center mt-3">
+            Your profile instantly unlocks dashboard metrics and CRUD screens.
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterRequestDto registerModel = new();
+    private string confirmPassword = string.Empty;
+    private string? error;
+    private string? confirmPasswordError;
+    private string? returnUrl;
+    private bool isLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CaptureReturnUrl();
+        var existingToken = await Api.GetCurrentTokenAsync();
+        if (!string.IsNullOrWhiteSpace(existingToken))
+        {
+            Navigation.NavigateTo("/dashboard", true);
+        }
+    }
+
+    private void CaptureReturnUrl()
+    {
+        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+
+        foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kvp = pair.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (kvp.Length == 2 && kvp[0].Equals("returnUrl", StringComparison.OrdinalIgnoreCase))
+            {
+                var candidate = Uri.UnescapeDataString(kvp[1]);
+                if (candidate.StartsWith("/"))
+                {
+                    returnUrl = candidate;
+                }
+                break;
+            }
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        error = null;
+        confirmPasswordError = null;
+
+        if (registerModel.Password != confirmPassword)
+        {
+            confirmPasswordError = "Passwords do not match.";
+            return;
+        }
+
+        isLoading = true;
+
+        var (result, errorMessage) = await Api.RegisterAsync(registerModel);
+
+        isLoading = false;
+
+        if (result is null)
+        {
+            error = errorMessage ?? "Registration failed.";
+            return;
+        }
+
+        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
+        Navigation.NavigateTo(target, true);
+    }
+}

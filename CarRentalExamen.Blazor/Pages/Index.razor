@@ -1,82 +1,185 @@
 @page "/"
+@page "/dashboard"
+@attribute [Authorize]
 @inject ApiClient Api
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 <PageTitle>Dashboard</PageTitle>
 
-<h3>Dashboard</h3>
-
-@if (requiresLogin)
-{
-    <div class="alert alert-info">Please login to view dashboard data.</div>
-}
-else if (stats is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <div class="card text-bg-primary mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Total Revenue</h5>
-                    <p class="card-text display-6">$@stats.Revenue</p>
-                </div>
+<div class="dashboard">
+    <div class="dashboard-head glass-card">
+        <div>
+            <div class="eyebrow">Operations cockpit</div>
+            <h2 class="mb-1">Welcome back, @displayName</h2>
+            <p class="dash-subtext mb-2">Track revenue, bookings, and fleet availability in one place.</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="pill">Live stats</span>
+                <span class="pill">Fleet CRUD</span>
+                <span class="pill">Reservations</span>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-bg-success mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Active Rentals</h5>
-                    <p class="card-text display-6">@stats.ActiveRentals</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-bg-info mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Available Cars</h5>
-                    <p class="card-text display-6">@stats.AvailableCars</p>
-                </div>
-            </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            <button class="btn btn-outline-primary" @onclick='@(() => Navigation.NavigateTo("cars"))'>Manage cars</button>
+            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("reservations/create"))'>New reservation</button>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <h5>Rentals per month</h5>
-            <ul class="list-group">
-                @foreach (var item in stats.RentalsPerMonth)
-                {
-                    <li class="list-group-item">@($"{item.Month}/{item.Year} - {item.Count}")</li>
-                }
-            </ul>
+    @if (isLoading)
+    {
+        <div class="dashboard-loading glass-card">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            <span>Fetching dashboard stats...</span>
         </div>
-        <div class="col-md-6">
-            <h5>Top cars</h5>
-            <ul class="list-group">
-                @foreach (var item in stats.TopCars)
-                {
-                    <li class="list-group-item">@($"{item.Car} - {item.Count} rentals")</li>
-                }
-            </ul>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    else if (stats is null)
+    {
+        <div class="alert alert-warning">No dashboard data available yet.</div>
+    }
+    else
+    {
+        <div class="stat-grid">
+            <div class="stat-card accent-primary">
+                <div class="label">Total revenue</div>
+                <div class="value">$@stats.Revenue.ToString("N2")</div>
+                <div class="subtext">Across all completed rentals.</div>
+            </div>
+            <div class="stat-card accent-success">
+                <div class="label">Active rentals</div>
+                <div class="value">@stats.ActiveRentals</div>
+                <div class="subtext">Vehicles currently out.</div>
+            </div>
+            <div class="stat-card accent-info">
+                <div class="label">Available cars</div>
+                <div class="value">@stats.AvailableCars</div>
+                <div class="subtext">Ready for pickup.</div>
+            </div>
+            <div class="stat-card accent-amber">
+                <div class="label">Monthly rentals</div>
+                <div class="value">@totalRentals</div>
+                <div class="subtext">Bookings tracked per month.</div>
+            </div>
         </div>
-    </div>
-}
+
+        <div class="panel-grid">
+            <div class="panel glass-card">
+                <div class="panel-head">
+                    <div>
+                        <div class="eyebrow">Volume</div>
+                        <h5 class="mb-0">Rentals per month</h5>
+                    </div>
+                    <span class="pill">Latest</span>
+                </div>
+                @if (!stats.RentalsPerMonth.Any())
+                {
+                    <div class="text-muted small">No rentals recorded yet.</div>
+                }
+                else
+                {
+                    <div class="bar-list">
+                        @foreach (var item in stats.RentalsPerMonth
+                            .OrderByDescending(r => r.Year)
+                            .ThenByDescending(r => r.Month))
+                        {
+                            <div class="bar-row">
+                                <div class="bar-label">@($"{item.Month}/{item.Year}")</div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style=$"width: {GetBarWidth(item.Count)}"></div>
+                                </div>
+                                <div class="bar-value">@item.Count</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="panel glass-card">
+                <div class="panel-head">
+                    <div>
+                        <div class="eyebrow">Fleet heroes</div>
+                        <h5 class="mb-0">Top cars</h5>
+                    </div>
+                    <span class="pill">Performance</span>
+                </div>
+                @if (!stats.TopCars.Any())
+                {
+                    <div class="text-muted small">No car performance data yet.</div>
+                }
+                else
+                {
+                    <div class="top-cars">
+                        @foreach (var car in stats.TopCars.OrderByDescending(c => c.Count))
+                        {
+                            <div class="top-car-card">
+                                <div>
+                                    <div class="fw-semibold">@car.Car</div>
+                                    <div class="small text-muted">@car.Count rentals</div>
+                                </div>
+                                <span class="badge bg-light text-dark">@car.Count</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     private DashboardStats? stats;
-    private bool requiresLogin;
+    private string displayName = "Operator";
+    private string? error;
+    private bool isLoading = true;
+    private int maxRentalCount;
+    private int totalRentals;
 
     protected override async Task OnInitializedAsync()
     {
-        var token = await Api.GetCurrentTokenAsync();
-        if (string.IsNullOrWhiteSpace(token))
+        await LoadUserAsync();
+        await LoadStatsAsync();
+    }
+
+    private async Task LoadUserAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        displayName = state.User.Identity?.Name
+            ?? state.User.FindFirst("unique_name")?.Value
+            ?? state.User.FindFirst("email")?.Value
+            ?? "Operator";
+    }
+
+    private async Task LoadStatsAsync()
+    {
+        try
         {
-            requiresLogin = true;
-            return;
+            stats = await Api.GetDashboardAsync();
+            totalRentals = stats?.RentalsPerMonth?.Sum(r => r.Count) ?? 0;
+            maxRentalCount = stats?.RentalsPerMonth?.Any() == true
+                ? stats.RentalsPerMonth.Max(r => r.Count)
+                : 0;
+        }
+        catch (Exception ex)
+        {
+            error = $"Unable to load dashboard data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetBarWidth(int count)
+    {
+        if (maxRentalCount <= 0)
+        {
+            return "12%";
         }
 
-        stats = await Api.GetDashboardAsync();
+        var percentage = Math.Max(12, Math.Round(count * 100d / maxRentalCount));
+        return $"{percentage}%";
     }
 }

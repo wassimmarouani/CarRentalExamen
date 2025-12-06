@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj": {}
+    "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj": {}
   },
   "projects": {
-    "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj": {
+    "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj",
+        "projectUniqueName": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj",
         "projectName": "CarRentalExamen.Blazor",
-        "projectPath": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj",
-        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Blazor\\obj\\",
+        "projectPath": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Blazor\\CarRentalExamen.Blazor.csproj",
+        "packagesPath": "C:\\Users\\MSI\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Blazor\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MSI\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,8 +32,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj": {
-                "projectPath": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj"
+              "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj": {
+                "projectPath": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj"
               }
             }
           }
@@ -48,12 +48,16 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Components.Authorization": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
             "Microsoft.AspNetCore.Components.WebAssembly": {
               "target": "Package",
               "version": "[8.0.10, )"
@@ -66,14 +70,18 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.20, )",
+              "version": "[8.0.22, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.9, )",
+              "version": "[10.0.0, )",
               "autoReferenced": true
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.0.1, )"
             }
           },
           "imports": [
@@ -89,8 +97,20 @@
           "warn": true,
           "downloadDependencies": [
             {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
+            },
+            {
               "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
-              "version": "[8.0.20, 8.0.20]"
+              "version": "[8.0.22, 8.0.22]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
             }
           ],
           "frameworkReferences": {
@@ -98,7 +118,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
@@ -107,20 +127,20 @@
         }
       }
     },
-    "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj": {
+    "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj",
+        "projectUniqueName": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj",
         "projectName": "CarRentalExamen.Core",
-        "projectPath": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj",
-        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "D:\\net tp\\CarRentalExamen\\CarRentalExamen.Core\\obj\\",
+        "projectPath": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\CarRentalExamen.Core.csproj",
+        "packagesPath": "C:\\Users\\MSI\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\MSI\\Desktop\\dotnet\\CarRentalExamen\\CarRentalExamen.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\MSI\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -147,7 +167,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -163,12 +183,26 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.22, 8.0.22]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

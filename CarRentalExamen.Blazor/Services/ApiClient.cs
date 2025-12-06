@@ -14,11 +14,17 @@ public class ApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly TokenStorage _tokenStorage;
+    private CustomAuthStateProvider? _authStateProvider;
 
     public ApiClient(HttpClient httpClient, TokenStorage tokenStorage)
     {
         _httpClient = httpClient;
         _tokenStorage = tokenStorage;
+    }
+
+    public void SetAuthStateProvider(CustomAuthStateProvider provider)
+    {
+        _authStateProvider = provider;
     }
 
     private async Task EnsureAuthHeaderAsync()
@@ -34,20 +40,70 @@ public class ApiClient
         }
     }
 
-    public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto dto)
+    public async Task<(AuthResponseDto? Result, string? Error)> LoginAsync(LoginRequestDto dto)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);
-        if (!response.IsSuccessStatusCode) return null;
-        var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-        if (auth is not null)
+        try
         {
-            await _tokenStorage.SetTokenAsync(auth.Token);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return (null, string.IsNullOrEmpty(errorContent) ? "Invalid username or password." : errorContent);
+            }
+
+            var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+            if (auth is not null)
+            {
+                await _tokenStorage.SetTokenAsync(auth.Token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+                _authStateProvider?.NotifyAuthenticationStateChanged();
+            }
+            return (auth, null);
         }
-        return auth;
+        catch (Exception ex)
+        {
+            return (null, $"Connection error: {ex.Message}");
+        }
     }
 
-    public Task LogoutAsync() => _tokenStorage.ClearAsync();
+    public async Task<(AuthResponseDto? Result, string? Error)> RegisterAsync(RegisterRequestDto dto)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/auth/register", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    return (null, errorContent.Contains("email", StringComparison.OrdinalIgnoreCase)
+                        ? "Email already exists."
+                        : "Username already exists.");
+                }
+                return (null, string.IsNullOrEmpty(errorContent) ? "Registration failed." : errorContent);
+            }
+
+            var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+            if (auth is not null)
+            {
+                await _tokenStorage.SetTokenAsync(auth.Token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+                _authStateProvider?.NotifyAuthenticationStateChanged();
+            }
+            return (auth, null);
+        }
+        catch (Exception ex)
+        {
+            return (null, $"Connection error: {ex.Message}");
+        }
+    }
+
+    public async Task LogoutAsync()
+    {
+        await _tokenStorage.ClearAsync();
+        _httpClient.DefaultRequestHeaders.Authorization = null;
+        _authStateProvider?.NotifyAuthenticationStateChanged();
+    }
 
     public async Task<List<Car>> GetCarsAsync(CarStatus? status = null)
     {

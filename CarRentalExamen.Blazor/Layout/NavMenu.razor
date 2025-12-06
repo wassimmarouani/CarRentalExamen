@@ -1,6 +1,11 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">CarRentalExamen</a>
+        <div class="nav-brand d-flex align-items-center gap-2">
+            <span class="brand-dot"></span>
+            <span class="fw-bold">CarRentalExamen</span>
+        </div>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -9,30 +14,29 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
-        <div class="nav-item px-3">
+        <div class="nav-section">
+            <div class="nav-label">Overview</div>
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
         </div>
-        <div class="nav-item px-3">
+        <div class="nav-section">
+            <div class="nav-label">Fleet</div>
             <NavLink class="nav-link" href="cars">
                 <span class="bi bi-car-front-fill" aria-hidden="true"></span> Cars
             </NavLink>
-        </div>
-        <div class="nav-item px-3">
             <NavLink class="nav-link" href="customers">
                 <span class="bi bi-people-fill" aria-hidden="true"></span> Customers
             </NavLink>
         </div>
-        <div class="nav-item px-3">
+        <div class="nav-section">
+            <div class="nav-label">Bookings</div>
             <NavLink class="nav-link" href="reservations">
                 <span class="bi bi-calendar-check" aria-hidden="true"></span> Reservations
             </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-person-circle" aria-hidden="true"></span> Login
-            </NavLink>
+            <button class="btn btn-primary w-100 mt-2" @onclick='@(() => Navigation.NavigateTo("reservations/create"))'>
+                New reservation
+            </button>
         </div>
     </nav>
 </div>

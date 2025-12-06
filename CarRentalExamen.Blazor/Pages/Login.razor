@@ -1,41 +1,154 @@
 @page "/login"
+@attribute [AllowAnonymous]
+@layout AuthLayout
 @inject ApiClient Api
 @inject NavigationManager Navigation
 
 <PageTitle>Login</PageTitle>
 
-<h3>Sign in</h3>
+<div class="auth-grid">
+    <div class="auth-aside">
+        <div class="pill mb-3">
+            <span class="pulse-dot"></span>
+            Live fleet control
+        </div>
+        <h2 class="mb-2">Re-enter the cockpit</h2>
+        <p class="mb-3">View the dashboard, move cars between states, and approve reservations without leaving this screen.</p>
+        <div class="auth-bullets">
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Dashboard first</div>
+                    <div class="small">Revenue, rentals, and availability at a glance.</div>
+                </div>
+            </div>
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Full CRUD unlocked</div>
+                    <div class="small">Cars, customers, reservations, and returns.</div>
+                </div>
+            </div>
+            <div class="auth-bullet">
+                <span class="bullet-dot"></span>
+                <div>
+                    <div class="fw-semibold">Instant feedback</div>
+                    <div class="small">Statuses update live as you save.</div>
+                </div>
+            </div>
+        </div>
+        <div class="stat-strip">
+            <div class="stat-chip">Availability controls</div>
+            <div class="stat-chip">Fleet visibility</div>
+            <div class="stat-chip">Secure tokens</div>
+        </div>
+    </div>
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
-    @if (!string.IsNullOrEmpty(error))
-    {
-        <div class="alert alert-danger">@error</div>
-    }
-    <div class="mb-3">
-        <label class="form-label">Username</label>
-        <InputText class="form-control" @bind-Value="loginModel.Username" />
+    <div class="auth-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <div class="eyebrow">Sign in</div>
+                <h4 class="mb-0">Return to the dashboard</h4>
+                <div class="auth-subtext small">Log in to manage rentals and fleet activity.</div>
+            </div>
+            <div class="text-end auth-subtext small">
+                New here?
+                <a href="/register">Create an account</a>
+            </div>
+        </div>
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="pt-2">
+            <DataAnnotationsValidator />
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert soft-alert">@error</div>
+            }
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <div class="input-shell">
+                    <span class="input-icon">ID</span>
+                    <InputText class="form-control" @bind-Value="loginModel.Username" autocomplete="username" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-shell">
+                    <span class="input-icon">PW</span>
+                    <InputText type="password" class="form-control" @bind-Value="loginModel.Password" autocomplete="current-password" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Enter dashboard
+            </button>
+        </EditForm>
+
+        <div class="auth-footer small text-center mt-3">
+            Tip: keep credentials safe. Tokens clear automatically when you log out.
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Password</label>
-        <InputText type="password" class="form-control" @bind-Value="loginModel.Password" />
-    </div>
-    <button class="btn btn-primary" type="submit">Login</button>
-</EditForm>
+</div>
 
 @code {
     private LoginRequestDto loginModel = new();
     private string? error;
+    private string? returnUrl;
+    private bool isLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CaptureReturnUrl();
+        var existingToken = await Api.GetCurrentTokenAsync();
+        if (!string.IsNullOrWhiteSpace(existingToken))
+        {
+            Navigation.NavigateTo("/dashboard", true);
+        }
+    }
+
+    private void CaptureReturnUrl()
+    {
+        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+
+        foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kvp = pair.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (kvp.Length == 2 && kvp[0].Equals("returnUrl", StringComparison.OrdinalIgnoreCase))
+            {
+                var candidate = Uri.UnescapeDataString(kvp[1]);
+                if (candidate.StartsWith("/"))
+                {
+                    returnUrl = candidate;
+                }
+                break;
+            }
+        }
+    }
 
     private async Task HandleLogin()
     {
         error = null;
-        var result = await Api.LoginAsync(loginModel);
+        isLoading = true;
+
+        var (result, errorMessage) = await Api.LoginAsync(loginModel);
+
+        isLoading = false;
+
         if (result is null)
         {
-            error = "Invalid username or password.";
+            error = errorMessage ?? "Invalid username or password.";
             return;
         }
-        Navigation.NavigateTo("/");
+
+        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
+        Navigation.NavigateTo(target, true);
     }
 }

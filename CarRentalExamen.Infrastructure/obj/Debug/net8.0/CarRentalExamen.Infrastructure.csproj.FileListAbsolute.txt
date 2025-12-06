@@ -33,3 +33,4 @@ D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\refint
 D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
 D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.genruntimeconfig.cache
 D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\ref\CarRentalExamen.Infrastructure.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.sourcelink.json

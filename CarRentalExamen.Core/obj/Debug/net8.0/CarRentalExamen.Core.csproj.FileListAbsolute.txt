@@ -21,3 +21,4 @@ D:\net tp\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.
 D:\net tp\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\refint\CarRentalExamen.Core.dll
 D:\net tp\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.pdb
 D:\net tp\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\ref\CarRentalExamen.Core.dll
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Core\obj\Debug\net8.0\CarRentalExamen.Core.sourcelink.json

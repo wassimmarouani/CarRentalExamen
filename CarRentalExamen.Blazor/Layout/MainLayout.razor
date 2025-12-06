@@ -1,12 +1,36 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
+@inherits LayoutComponentBase
+@inject ApiClient Api
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<div class="page app-shell">
+    <div class="sidebar shadow-sm">
         <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 align-items-center">
+            <div>
+                <div class="eyebrow mb-1">Control center</div>
+                <div class="fw-semibold">Car Rental Dashboard</div>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="user-chip">
+                            <span class="status-dot"></span>
+                            <div>
+                                <div class="small text-muted">Signed in</div>
+                                <div class="fw-semibold">@displayName</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="Logout">Logout</button>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a class="btn btn-sm btn-primary" href="/login">Login</a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -14,3 +38,22 @@
         </article>
     </main>
 </div>
+
+@code {
+    private string displayName = "Operator";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        displayName = state.User.Identity?.Name
+            ?? state.User.FindFirst("unique_name")?.Value
+            ?? state.User.FindFirst("email")?.Value
+            ?? "Operator";
+    }
+
+    private async Task Logout()
+    {
+        await Api.LogoutAsync();
+        Navigation.NavigateTo("/login", true);
+    }
+}

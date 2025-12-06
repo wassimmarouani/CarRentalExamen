@@ -287,3 +287,4 @@ D:\net tp\CarRentalExamen\CarRentalExamen.API\obj\Debug\net8.0\CarRentalExamen.A
 D:\net tp\CarRentalExamen\CarRentalExamen.API\obj\Debug\net8.0\CarRentalExamen.API.genruntimeconfig.cache
 D:\net tp\CarRentalExamen\CarRentalExamen.API\obj\Debug\net8.0\ref\CarRentalExamen.API.dll
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.API\obj\Debug\net8.0\CarRentalExamen.API.sourcelink.json
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.API\bin\Debug\net8.0\CarRentalExamen.API.staticwebassets.runtime.json

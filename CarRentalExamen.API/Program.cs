@@ -97,7 +97,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Use plain HTTP in dev to match the configured base URL from the Blazor client.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseStaticFiles();
 app.UseCors("AllowBlazor");
 app.UseAuthentication();
 app.UseAuthorization();

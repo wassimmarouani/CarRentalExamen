@@ -6,53 +6,113 @@
 
 @if (car is null)
 {
-    <p>Loading...</p>
+    <div class="card glassy p-4 text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div class="mt-2 text-muted">Loading car details...</div>
+    </div>
 }
 else
 {
-    <div class="mb-3">
-        <h3>@car.Make @car.Model (@car.Year)</h3>
-        <p><strong>Plate:</strong> @car.PlateNumber</p>
-        <p><strong>Status:</strong> @car.Status</p>
-        <p><strong>Daily Price:</strong> $@car.DailyPrice</p>
-        <p><strong>Mileage:</strong> @car.Mileage km</p>
-    </div>
+    <div class="car-details-grid">
+        <div class="car-hero glassy">
+            <div class="car-image-wrap">
+                <img src="@HeroImageUrl" alt="@($"{car.Make} {car.Model}")" class="car-image" onerror="this.src='/favicon.png';" />
+                <span class="status-chip @GetStatusClass(car.Status)">@car.Status</span>
+            </div>
+            <div class="car-meta">
+                <div class="eyebrow">Car profile</div>
+                <h2 class="mb-1">@car.Make @car.Model <span class="text-muted">(@car.Year)</span></h2>
+                <div class="meta-row">
+                    <div class="pill">Plate: @car.PlateNumber</div>
+                    <div class="pill">Mileage: @car.Mileage km</div>
+                    <div class="pill">Daily: @car.DailyPrice.ToString("C")</div>
+                </div>
+            </div>
+        </div>
 
-    <h5>Reservations</h5>
-    @if (car.Reservations is null || !car.Reservations.Any())
-    {
-        <p>No reservations yet.</p>
-    }
-    else
-    {
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>Customer</th>
-                    <th>Dates</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var res in car.Reservations)
-                {
-                    <tr>
-                        <td>@res.Customer?.FirstName @res.Customer?.LastName</td>
-                        <td>@res.StartDate.ToShortDateString() - @res.EndDate.ToShortDateString()</td>
-                        <td>@res.Status</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+        <div class="car-specs glassy">
+            <div class="spec">
+                <div class="label">Make</div>
+                <div class="value">@car.Make</div>
+            </div>
+            <div class="spec">
+                <div class="label">Model</div>
+                <div class="value">@car.Model</div>
+            </div>
+            <div class="spec">
+                <div class="label">Year</div>
+                <div class="value">@car.Year</div>
+            </div>
+            <div class="spec">
+                <div class="label">Plate</div>
+                <div class="value">@car.PlateNumber</div>
+            </div>
+            <div class="spec">
+                <div class="label">Status</div>
+                <div class="value"><span class="status-chip @GetStatusClass(car.Status)">@car.Status</span></div>
+            </div>
+            <div class="spec">
+                <div class="label">Daily Price</div>
+                <div class="value">@car.DailyPrice.ToString("C")</div>
+            </div>
+            <div class="spec">
+                <div class="label">Mileage</div>
+                <div class="value">@car.Mileage km</div>
+            </div>
+        </div>
+
+        <div class="car-reservations glassy">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="eyebrow">Bookings</div>
+                    <h4 class="mb-0">Reservations</h4>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" href="/reservations/create">New reservation</a>
+            </div>
+
+            @if (car.Reservations is null || !car.Reservations.Any())
+            {
+                <div class="empty-state text-muted">No reservations yet.</div>
+            }
+            else
+            {
+                <div class="res-list">
+                    @foreach (var res in car.Reservations.OrderByDescending(r => r.StartDate))
+                    {
+                        <div class="res-card">
+                            <div>
+                                <div class="fw-semibold">@res.Customer?.FirstName @res.Customer?.LastName</div>
+                                <div class="small text-muted">@res.StartDate:dd MMM yyyy — @res.EndDate:dd MMM yyyy</div>
+                            </div>
+                            <span class="status-chip @GetStatusClass(res.Status)">@res.Status</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 }
 
 @code {
     [Parameter] public int id { get; set; }
     private Car? car;
+    private string HeroImageUrl => string.IsNullOrWhiteSpace(car?.ImageUrl) ? "/favicon.png" : car.ImageUrl!;
 
     protected override async Task OnInitializedAsync()
     {
         car = await Api.GetCarAsync(id);
+    }
+
+    private string GetStatusClass(Enum status)
+    {
+        var name = status.ToString().ToLowerInvariant();
+        return name switch
+        {
+            "available" => "chip-available",
+            "reserved" => "chip-reserved",
+            "active" => "chip-active",
+            "maintenance" => "chip-maintenance",
+            _ => "chip-muted"
+        };
     }
 }

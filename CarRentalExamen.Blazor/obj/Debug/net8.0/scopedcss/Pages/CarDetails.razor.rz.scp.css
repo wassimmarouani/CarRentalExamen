@@ -1,0 +1,127 @@
+.car-details-grid[b-i2q07a5vmo] {
+    display: grid;
+    grid-template-columns: 2fr 1.25fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+}
+
+.car-hero[b-i2q07a5vmo] {
+    grid-column: 1 / span 2;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.car-image-wrap[b-i2q07a5vmo] {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a, #111827);
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+}
+
+.car-image[b-i2q07a5vmo] {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.status-chip[b-i2q07a5vmo] {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #e5e7eb;
+}
+
+.chip-available[b-i2q07a5vmo] { background: #d1fae5; }
+.chip-reserved[b-i2q07a5vmo] { background: #fee2e2; }
+.chip-active[b-i2q07a5vmo] { background: #e0f2fe; }
+.chip-maintenance[b-i2q07a5vmo] { background: #fef3c7; }
+.chip-muted[b-i2q07a5vmo] { background: #e5e7eb; }
+
+.car-meta .pill[b-i2q07a5vmo] {
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.car-specs[b-i2q07a5vmo] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.spec[b-i2q07a5vmo] {
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.spec .label[b-i2q07a5vmo] {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+}
+
+.spec .value[b-i2q07a5vmo] {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.car-reservations[b-i2q07a5vmo] {
+    grid-column: 1 / span 2;
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+}
+
+.res-list[b-i2q07a5vmo] {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.res-card[b-i2q07a5vmo] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+}
+
+.empty-state[b-i2q07a5vmo] {
+    padding: 0.75rem 0;
+}
+
+.glassy[b-i2q07a5vmo] {
+    background: #ffffff;
+    box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 960px) {
+    .car-details-grid[b-i2q07a5vmo] {
+        grid-template-columns: 1fr;
+    }
+
+    .car-hero[b-i2q07a5vmo] {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+    }
+
+    .car-reservations[b-i2q07a5vmo] {
+        grid-column: 1;
+    }
+}

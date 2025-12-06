@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.Forms;
 using CarRentalExamen.Core.DTOs.Auth;
 using CarRentalExamen.Core.DTOs.Cars;
 using CarRentalExamen.Core.DTOs.Customers;
@@ -247,6 +248,34 @@ public class ApiClient
     }
 
     public async Task<string?> GetCurrentTokenAsync() => await _tokenStorage.GetTokenAsync();
+
+    public async Task<(string? Url, string? Error)> UploadCarImageAsync(IBrowserFile file, long maxBytes = 5 * 1024 * 1024)
+    {
+        try
+        {
+            await EnsureAuthHeaderAsync();
+
+            var content = new MultipartFormDataContent();
+            var stream = file.OpenReadStream(maxBytes);
+            var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content.Add(streamContent, "file", file.Name);
+
+            var response = await _httpClient.PostAsync("api/files/car-image", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                return (null, string.IsNullOrWhiteSpace(err) ? "Failed to upload image." : err);
+            }
+
+            var uploadResponse = await response.Content.ReadFromJsonAsync<CarImageUploadResponse>();
+            return (uploadResponse?.Url ?? uploadResponse?.RelativeUrl, null);
+        }
+        catch (Exception ex)
+        {
+            return (null, $"Upload failed: {ex.Message}");
+        }
+    }
 }
 
 public class ReturnRequestDto
@@ -297,4 +326,10 @@ public class TopCarStat
     public int Count { get; set; }
 
     public override string ToString() => $"{Car} ({Count})";
+}
+
+public class CarImageUploadResponse
+{
+    public string Url { get; set; } = string.Empty;
+    public string RelativeUrl { get; set; } = string.Empty;
 }

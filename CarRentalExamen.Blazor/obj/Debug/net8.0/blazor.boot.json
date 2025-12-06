@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "CarRentalExamen.Blazor",
   "resources": {
-    "hash": "sha256-22r5iF1yBYtBstLA/5qOOkAWkgTWJIDtVoEdYdMWaYQ=",
+    "hash": "sha256-IHd+wnxbEUkhUWz4PVSSR6FtBqeT3uwfknPEE21pK1I=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-vtotCeXt2UD6oc459laJT32vBgigZ+eLoUmdeFkvYDk="
     },
@@ -215,12 +215,12 @@
       "mscorlib.wasm": "sha256-K9gNrsN9UmPqLs6J/FrkiKpmkVGnHjjqUsc7YGvesCY=",
       "netstandard.wasm": "sha256-4emjlXLM9qW3t2tlII20SDylBgG4ueI0wy9nh5FMd8g=",
       "System.Private.CoreLib.wasm": "sha256-2DN4v7I/tabltDEPdIO8sDBB0tY8zOm+0CvHbMssXW4=",
-      "CarRentalExamen.Core.wasm": "sha256-NjymjrhcHfAtQOEXxZbKZ+iexKrpHw9FCwPhLRmPzgA=",
-      "CarRentalExamen.Blazor.wasm": "sha256-P1LDk/c8nvM2MZ2H0Md84zXtLlMFBkRe6UnpEP98WfQ="
+      "CarRentalExamen.Core.wasm": "sha256-9PGZkbpAJSz3Q8dP8bc0TPwc2K1asrTOyAEGNk+wxZU=",
+      "CarRentalExamen.Blazor.wasm": "sha256-ny4Rspe4FgfTuvTYp5Wc1XZoMP4qxi9IVAKtumTDEho="
     },
     "pdb": {
-      "CarRentalExamen.Core.pdb": "sha256-RXl62IPXsX578m+uqnQY9DvTw5q4XeBRSwjM/B/DrxE=",
-      "CarRentalExamen.Blazor.pdb": "sha256-PzABVBuqY8bPPoCZ6FDMQPgDAhRO2dQjkwzqE2r4eQA="
+      "CarRentalExamen.Core.pdb": "sha256-4RFtCfgYwn4aumR3VsbXw7U0cdKPF4QCzJ5RR3FJats=",
+      "CarRentalExamen.Blazor.pdb": "sha256-ei7IJhHYiiWNusHCfnpB9FpV/tprpH7C9HULITL6POw="
     }
   },
   "cacheBootResources": true,

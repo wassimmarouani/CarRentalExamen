@@ -35,8 +35,20 @@
                 <InputNumber class="form-control" @bind-Value="carModel.DailyPrice" />
             </div>
             <div class="mb-3">
-                <label class="form-label">Image Url</label>
-                <InputText class="form-control" @bind-Value="carModel.ImageUrl" />
+                <label class="form-label">Car Image</label>
+                <InputFile OnChange="OnFileChange" accept="image/*" />
+                @if (isUploading)
+                {
+                    <div class="text-muted small mt-1">Uploading...</div>
+                }
+                else if (!string.IsNullOrEmpty(uploadError))
+                {
+                    <div class="text-danger small mt-1">@uploadError</div>
+                }
+                else if (!string.IsNullOrEmpty(carModel.ImageUrl))
+                {
+                    <div class="text-success small mt-1">Image saved.</div>
+                }
             </div>
             <div class="mb-3">
                 <label class="form-label">Mileage</label>
@@ -60,6 +72,8 @@
 @code {
     [Parameter] public int? id { get; set; }
     private CarCreateUpdateDto carModel = new();
+    private bool isUploading;
+    private string? uploadError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,5 +101,27 @@
     {
         await Api.SaveCarAsync(id, carModel);
         Navigation.NavigateTo("/cars");
+    }
+
+    private async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        uploadError = null;
+        var file = e.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        isUploading = true;
+        var (url, error) = await Api.UploadCarImageAsync(file);
+        isUploading = false;
+
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            uploadError = error;
+            return;
+        }
+
+        carModel.ImageUrl = url;
     }
 }

@@ -1,5 +1,6 @@
 using CarRentalExamen.Core.DTOs.Customers;
 using CarRentalExamen.Core.Entities;
+using CarRentalExamen.Core.Enums;
 using CarRentalExamen.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -74,9 +75,15 @@ public class CustomersController : ControllerBase
         var customer = await _context.Customers.Include(c => c.Reservations).FirstOrDefaultAsync(c => c.Id == id);
         if (customer is null) return NotFound();
 
-        if (customer.Reservations.Any())
+        // Only block deletion if there are active/pending reservations
+        var hasActiveReservations = customer.Reservations.Any(r =>
+            r.Status == ReservationStatus.Pending ||
+            r.Status == ReservationStatus.Confirmed ||
+            r.Status == ReservationStatus.Active);
+
+        if (hasActiveReservations)
         {
-            return BadRequest("Cannot delete customer with reservations history.");
+            return BadRequest("Cannot delete customer with active reservations.");
         }
 
         _context.Customers.Remove(customer);

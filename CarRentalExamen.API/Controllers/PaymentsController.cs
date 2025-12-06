@@ -23,6 +23,11 @@ public class PaymentsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Payment>> Create([FromBody] PaymentCreateDto dto)
     {
+        if (dto.Amount <= 0)
+        {
+            return BadRequest("Payment amount must be greater than zero.");
+        }
+
         var reservation = await _context.Reservations
             .Include(r => r.Payments)
             .Include(r => r.Return)

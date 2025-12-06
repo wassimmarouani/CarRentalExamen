@@ -37,7 +37,7 @@ public class DashboardController : ControllerBase
             .Select(g => new
             {
                 CarId = g.Key,
-                Car = g.First().Car != null ? $"{g.First().Car.Make} {g.First().Car.Model}" : $"Car {g.Key}",
+                Car = g.First().Car != null ? $"{g.First().Car!.Make} {g.First().Car!.Model}" : $"Car {g.Key}",
                 Count = g.Count()
             })
             .OrderByDescending(x => x.Count)

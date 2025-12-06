@@ -15,3 +15,21 @@ C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\D
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.genruntimeconfig.cache
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\ref\CarRentalExamen.Infrastructure.dll
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.deps.json
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.runtimeconfig.json
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.dll
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Core.dll
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\bin\Debug\net8.0\CarRentalExamen.Core.pdb
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.csproj.AssemblyReference.cache
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.AssemblyInfoInputs.cache
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.AssemblyInfo.cs
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.csproj.CoreCompileInputs.cache
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.sourcelink.json
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRenta.61762E90.Up2Date
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.dll
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\refint\CarRentalExamen.Infrastructure.dll
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.pdb
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\CarRentalExamen.Infrastructure.genruntimeconfig.cache
+D:\net tp\CarRentalExamen\CarRentalExamen.Infrastructure\obj\Debug\net8.0\ref\CarRentalExamen.Infrastructure.dll

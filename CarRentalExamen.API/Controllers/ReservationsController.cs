@@ -56,7 +56,12 @@ public class ReservationsController : ControllerBase
         var car = await _context.Cars.FindAsync(dto.CarId);
         if (car is null) return BadRequest("Car not found.");
         if (car.Status != CarStatus.Available) return BadRequest("Car is not available.");
+
+        var customer = await _context.Customers.FindAsync(dto.CustomerId);
+        if (customer is null) return BadRequest("Customer not found.");
+
         if (dto.EndDate <= dto.StartDate) return BadRequest("End date must be after start date.");
+        if (dto.StartDate.Date < DateTime.UtcNow.Date) return BadRequest("Start date cannot be in the past.");
 
         var hasOverlap = await _context.Reservations.AnyAsync(r =>
             r.CarId == dto.CarId &&
@@ -159,6 +164,30 @@ public class ReservationsController : ControllerBase
             .Include(r => r.Return)
             .FirstOrDefaultAsync(r => r.Id == id);
         if (reservation is null) return NotFound();
+
+        // Validate reservation status
+        if (reservation.Status == ReservationStatus.Completed)
+        {
+            return BadRequest("Reservation is already completed.");
+        }
+        if (reservation.Status == ReservationStatus.Cancelled)
+        {
+            return BadRequest("Cannot complete a cancelled reservation.");
+        }
+
+        // Validate fees are non-negative
+        if (request.LateFees.HasValue && request.LateFees.Value < 0)
+        {
+            return BadRequest("Late fees cannot be negative.");
+        }
+        if (request.DamageFees.HasValue && request.DamageFees.Value < 0)
+        {
+            return BadRequest("Damage fees cannot be negative.");
+        }
+        if (request.FuelFees.HasValue && request.FuelFees.Value < 0)
+        {
+            return BadRequest("Fuel fees cannot be negative.");
+        }
 
         reservation.Status = ReservationStatus.Completed;
         reservation.ReturnedAt = request.ReturnDate ?? DateTime.UtcNow;

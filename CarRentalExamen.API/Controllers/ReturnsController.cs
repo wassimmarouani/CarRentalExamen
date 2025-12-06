@@ -29,9 +29,37 @@ public class ReturnsController : ControllerBase
 
         if (reservation is null) return NotFound("Reservation not found");
 
+        // Validate reservation is in a state that can be returned
+        if (reservation.Status == ReservationStatus.Completed)
+        {
+            return BadRequest("Reservation is already completed.");
+        }
+        if (reservation.Status == ReservationStatus.Cancelled)
+        {
+            return BadRequest("Cannot return a cancelled reservation.");
+        }
+        if (reservation.Status == ReservationStatus.Pending)
+        {
+            return BadRequest("Reservation must be picked up before it can be returned.");
+        }
+
+        // Validate fees are non-negative
+        if (request.LateFees.HasValue && request.LateFees.Value < 0)
+        {
+            return BadRequest("Late fees cannot be negative.");
+        }
+        if (request.DamageFees.HasValue && request.DamageFees.Value < 0)
+        {
+            return BadRequest("Damage fees cannot be negative.");
+        }
+        if (request.FuelFees.HasValue && request.FuelFees.Value < 0)
+        {
+            return BadRequest("Fuel fees cannot be negative.");
+        }
+
         var returnDate = request.ReturnDate ?? DateTime.UtcNow;
         var daysLate = returnDate.Date > reservation.EndDate.Date ? (returnDate.Date - reservation.EndDate.Date).Days : 0;
-        var lateFees = request.LateFees ?? (daysLate * 25m);
+        var lateFees = request.LateFees ?? (daysLate * 20m);
         var fuelFees = request.FuelFees ?? CalculateFuelFee(reservation.PickupFuelLevel, request.ReturnFuelLevel);
         var damageFees = request.DamageFees ?? 0;
         var totalExtra = lateFees + fuelFees + damageFees;

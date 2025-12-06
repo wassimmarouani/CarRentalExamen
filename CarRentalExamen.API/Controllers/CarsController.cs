@@ -119,8 +119,19 @@ public class CarsController : ControllerBase
     [HttpPut("{id:int}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] CarStatus status)
     {
-        var car = await _context.Cars.FindAsync(id);
+        var car = await _context.Cars.Include(c => c.Reservations).FirstOrDefaultAsync(c => c.Id == id);
         if (car is null) return NotFound();
+
+        // Prevent setting to Available if car has active reservations
+        var hasActiveReservation = car.Reservations.Any(r =>
+            r.Status == ReservationStatus.Active ||
+            r.Status == ReservationStatus.Confirmed);
+
+        if (status == CarStatus.Available && hasActiveReservation)
+        {
+            return BadRequest("Cannot set car to Available while it has active or confirmed reservations.");
+        }
+
         car.Status = status;
         await _context.SaveChangesAsync();
         return NoContent();

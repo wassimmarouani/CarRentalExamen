@@ -1,15 +1,15 @@
 {
   "mainAssemblyName": "CarRentalExamen.Blazor",
   "resources": {
-    "hash": "sha256-ScxmuJDWYEfXkni1jU8kQt72Lzep+voCIQ5NqJ8BO4M=",
+    "hash": "sha256-kEfrYZizo3Cnxn4IecYqHMu3E+ZL9j7MXv2gn2nIydk=",
     "jsModuleNative": {
-      "dotnet.native.js": "sha256-vtotCeXt2UD6oc459laJT32vBgigZ+eLoUmdeFkvYDk="
+      "dotnet.native.js": "sha256-D0bzod5lwwSzPR43JC8TTCcZKw+3jIHOk8CZFCRj5is="
     },
     "jsModuleRuntime": {
-      "dotnet.runtime.js": "sha256-6bV/iAemowb59rmItegP8VsxwWpWUNyMb0Q76Fvvsjo="
+      "dotnet.runtime.js": "sha256-OH8zlJkheyf8H9oAbu0wu1oQm9FKy/BKjDk4Bj/va3s="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-I9mo79uNpf37/J/jYCGkW9F0w+mgb+ezeNdHNbQNvf0="
+      "dotnet.native.wasm": "sha256-1FiXHTP4dewtkVEvJ/s93FNwgKHgjajc/MAN3sofq6Q="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -209,12 +209,12 @@
       "mscorlib.wasm": "sha256-K9gNrsN9UmPqLs6J/FrkiKpmkVGnHjjqUsc7YGvesCY=",
       "netstandard.wasm": "sha256-4emjlXLM9qW3t2tlII20SDylBgG4ueI0wy9nh5FMd8g=",
       "System.Private.CoreLib.wasm": "sha256-2DN4v7I/tabltDEPdIO8sDBB0tY8zOm+0CvHbMssXW4=",
-      "CarRentalExamen.Core.wasm": "sha256-c+qtjLqEiOKyFhPkAd1vvPxoS8Uk3UXRUGUz/rG3jVg=",
-      "CarRentalExamen.Blazor.wasm": "sha256-zpzE1PtAka6SHEgQeijC6P8H9IiNEMD1un3RYL9nFZY="
+      "CarRentalExamen.Core.wasm": "sha256-grqIC0ECMxhDH6eqwycKsH8JT1qSimM/aa8LLaKXBiY=",
+      "CarRentalExamen.Blazor.wasm": "sha256-E/dmk1hbmqZo52Pvy1JQ/+XnE04vAldZPz3m4goZfYI="
     },
     "pdb": {
-      "CarRentalExamen.Core.pdb": "sha256-oNdm0yVRhNjTwsaQrqSesrqKUfvwM4/ARI5ifhIGHOo=",
-      "CarRentalExamen.Blazor.pdb": "sha256-uLxl3flGS7t8sfcNIoqzDnuLft1qQIF/F2GgkkYqzRQ="
+      "CarRentalExamen.Core.pdb": "sha256-zsBS/A/UY0QX4ReC1MECc+zbSZlECgSj4SmgQleqXp0=",
+      "CarRentalExamen.Blazor.pdb": "sha256-FR5JhMcbbEKrn5g4IuOtfrVlgwmf+DkEhxzwFfAq6zU="
     }
   },
   "cacheBootResources": true,

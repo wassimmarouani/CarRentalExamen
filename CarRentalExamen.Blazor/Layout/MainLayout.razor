@@ -4,36 +4,58 @@
 @inject NavigationManager Navigation
 
 <div class="page app-shell">
-    <div class="sidebar shadow-sm">
+    <aside class="sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4 align-items-center">
-            <div>
-                <div class="eyebrow mb-1">Control center</div>
-                <div class="fw-semibold">Car Rental Dashboard</div>
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <div class="eyebrow">Control Center</div>
+                <h1 class="top-bar-title">Velocity Fleet</h1>
             </div>
-            <div class="ms-auto d-flex align-items-center gap-3">
+
+            <div class="top-bar-right">
                 <AuthorizeView>
                     <Authorized>
-                        <div class="user-chip">
-                            <span class="status-dot"></span>
-                            <div>
-                                <div class="small text-muted">Signed in</div>
-                                <div class="fw-semibold">@displayName</div>
+                        <div class="user-card">
+                            <div class="user-avatar">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                                    <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                                    <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"></path>
+                                </svg>
                             </div>
+                            <div class="user-info">
+                                <span class="user-label">Operator</span>
+                                <span class="user-name">@displayName</span>
+                            </div>
+                            <span class="status-indicator"></span>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="Logout">Logout</button>
+                        <button class="btn btn-logout" @onclick="Logout">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path>
+                                <path d="M9 12h12l-3 -3"></path>
+                                <path d="M18 15l3 -3"></path>
+                            </svg>
+                            Sign Out
+                        </button>
                     </Authorized>
                     <NotAuthorized>
-                        <a class="btn btn-sm btn-primary" href="/login">Login</a>
+                        <a class="btn btn-primary" href="/login">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path>
+                                <path d="M20 12h-13l3 -3"></path>
+                                <path d="M10 15l-3 -3"></path>
+                            </svg>
+                            Sign In
+                        </a>
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
-        </div>
+        </header>
 
-        <article class="content px-4">
+        <article class="content-area">
             @Body
         </article>
     </main>

@@ -2121,9 +2121,9 @@ C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\vk4m4yn2hk-{0}-73ah5knv97-73ah5knv97.gz
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\scopedcss\Layout\AuthLayout.razor.rz.scp.css
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\scopedcss\Pages\Index.razor.rz.scp.css
-C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\ygz50gfzak-{0}-wbqbcurtng-wbqbcurtng.gz
-C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\tcipixcli7-{0}-9ytln0dpoc-9ytln0dpoc.gz
 C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\scopedcss\Pages\CarDetails.razor.rz.scp.css
-C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\1ldypjsw1p-{0}-1wq1zcecrt-1wq1zcecrt.gz
-C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\d0rj1p1s1h-{0}-uawsfwdqow-uawsfwdqow.gz
-C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\07qtt50kdo-{0}-cww7ll9k1i-cww7ll9k1i.gz
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\ygz50gfzak-{0}-n0vss28hoa-n0vss28hoa.gz
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\tcipixcli7-{0}-bvfx6h2i09-bvfx6h2i09.gz
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\1ldypjsw1p-{0}-zn70x5k1df-zn70x5k1df.gz
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\d0rj1p1s1h-{0}-6rqycxc94k-6rqycxc94k.gz
+C:\Users\MSI\Desktop\dotnet\CarRentalExamen\CarRentalExamen.Blazor\obj\Debug\net8.0\compressed\07qtt50kdo-{0}-inow0xw75m-inow0xw75m.gz

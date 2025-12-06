@@ -1,23 +1,44 @@
 @inherits LayoutComponentBase
 
 <div class="auth-shell">
+    <!-- Animated background elements -->
     <div class="auth-orb orb-one"></div>
     <div class="auth-orb orb-two"></div>
     <div class="auth-orb orb-three"></div>
 
-    <div class="auth-frame">
-        <div class="auth-top glass-card d-flex align-items-center gap-3">
-            <div class="logo-mark">CR</div>
-            <div>
-                <div class="eyebrow mb-1">Car Rental Studio</div>
-                <div class="fw-semibold">Access the control center</div>
-            </div>
-            <div class="ms-auto pill">
-                <span class="pulse-dot"></span>
-                Secure area
-            </div>
-        </div>
+    <!-- Floating particles -->
+    <div class="particles">
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+        <span class="particle"></span>
+    </div>
 
+    <div class="auth-frame">
+        <!-- Top header bar with branding -->
+        <header class="auth-top glass-card">
+            <div class="logo-mark">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+                </svg>
+            </div>
+            <div class="brand-info">
+                <div class="eyebrow">Velocity Fleet</div>
+                <div class="fw-semibold">Car Rental Command</div>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="pill">
+                    <span class="pulse-dot"></span>
+                    Secure Portal
+                </div>
+                <div class="version-tag">v2.0</div>
+            </div>
+        </header>
+
+        <!-- Main content area -->
         @Body
     </div>
 </div>

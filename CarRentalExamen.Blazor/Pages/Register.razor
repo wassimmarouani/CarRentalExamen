@@ -3,123 +3,324 @@
 @layout AuthLayout
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@implements IDisposable
+@using System.Linq
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register - Velocity Fleet</PageTitle>
 
-<div class="auth-grid">
+<div class="auth-grid auth-grid-premium">
     <div class="auth-aside">
-        <div class="pill mb-3">
-            <span class="pulse-dot"></span>
-            New access badge
+        <div class="brand-lockup mb-4">
+            <div class="brand-mark">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+                </svg>
+            </div>
+            <div>
+                <div class="eyebrow text-soft">Velocity Fleet</div>
+                <div class="brand-title">Car Rental Command</div>
+                <div class="small text-soft">New operator setup</div>
+            </div>
+            <span class="badge-secure ms-auto">
+                <span class="status-dot"></span>
+                Secure Portal
+            </span>
         </div>
-        <h2 class="mb-2">Create your operator profile</h2>
-        <p class="mb-3">Provision a fresh account to unlock the dashboard, edit the fleet, and approve or cancel reservations.</p>
+
+        <div class="pill mb-3">
+            <span class="pulse-dot pulse-dot-accent"></span>
+            New Operator Setup
+        </div>
+
+        <h2>Join the fleet command</h2>
+        <p class="mb-4">Create your operator credentials to unlock full control of vehicles, bookings, customers, and analytics.</p>
+
         <div class="auth-bullets">
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                        <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                        <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Full control</div>
-                    <div class="small">Add, edit, or retire cars with status changes.</div>
+                    <div class="fw-semibold">Vehicle Management</div>
+                    <div class="small">Authorize inventory updates, availability, and maintenance status.</div>
                 </div>
             </div>
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Customer-ready</div>
-                    <div class="small">Capture drivers, payments, and rental history.</div>
+                    <div class="fw-semibold">Customer Database</div>
+                    <div class="small">Manage customer history, billing preferences, and risk indicators.</div>
                 </div>
             </div>
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"></path>
+                        <path d="M16 3v4"></path>
+                        <path d="M8 3v4"></path>
+                        <path d="M4 11h16"></path>
+                        <path d="M8 15h2v2h-2z"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Secure tokens</div>
-                    <div class="small">Local token storage with instant sign out.</div>
+                    <div class="fw-semibold">Booking System</div>
+                    <div class="small">Control reservations, returns, and scheduling with operator privileges.</div>
                 </div>
             </div>
         </div>
+
         <div class="stat-strip">
-            <div class="stat-chip">Add vehicles</div>
-            <div class="stat-chip">Schedule rentals</div>
-            <div class="stat-chip">Collect payments</div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                    <path d="M9 12l2 2l4 -4"></path>
+                </svg>
+                Instant Setup
+            </div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                    <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"></path>
+                </svg>
+                Full Access
+            </div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
+                    <path d="M3.6 9h16.8"></path>
+                    <path d="M3.6 15h16.8"></path>
+                    <path d="M11.5 3a17 17 0 0 0 0 18"></path>
+                    <path d="M12.5 3a17 17 0 0 1 0 18"></path>
+                </svg>
+                Cloud Sync
+            </div>
         </div>
     </div>
 
-    <div class="auth-card">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-                <div class="eyebrow">Register</div>
-                <h4 class="mb-0">Craft your login</h4>
-                <div class="auth-subtext small">You will land on the dashboard right after.</div>
+    <div class="auth-card auth-card-premium">
+        <div class="auth-card-header">
+            <div class="auth-card-title">
+                <div class="authority-chip">
+                    <span class="status-dot"></span>
+                    Operator Access Enabled
+                </div>
+                <div class="eyebrow mt-2">Registration</div>
+                <h4>Create your account</h4>
+                <p class="auth-subtext">Set up your operator credentials to get started.</p>
             </div>
-            <div class="text-end auth-subtext small">
-                Already joined?
-                <a href="/login">Sign in</a>
+            <div class="auth-nav">
+                <span class="auth-nav-text">Already registered?</span>
+                <a href="/login" class="auth-nav-link">Sign in</a>
             </div>
         </div>
 
-        <EditForm Model="registerModel" OnValidSubmit="HandleRegister" class="pt-2">
+        @if (showSuccessToast)
+        {
+            <div class="success-toast" role="status">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                    <path d="M9 12l2 2l4 -4"></path>
+                </svg>
+                Operator profile created. Redirecting to dashboard...
+            </div>
+        }
+
+        <EditForm EditContext="registerEditContext" OnValidSubmit="HandleRegister" class="auth-form" novalidate>
             <DataAnnotationsValidator />
+
             @if (!string.IsNullOrEmpty(error))
             {
-                <div class="alert soft-alert">@error</div>
+                <div class="alert soft-alert" role="alert">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 9v2m0 4v.01"></path>
+                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                    </svg>
+                    @error
+                </div>
             }
+
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <div class="input-shell">
-                    <span class="input-icon">ID</span>
-                    <InputText class="form-control" @bind-Value="registerModel.Username" autocomplete="username" />
+                <label class="form-label" for="reg-username">Username</label>
+                <div class="input-shell @GetInputState(registerModel, nameof(registerModel.Username))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                            <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                            <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"></path>
+                        </svg>
+                    </span>
+                    <InputText id="reg-username" class="form-control" @bind-Value="registerModel.Username"
+                               autocomplete="username" placeholder="Choose a username" aria-required="true" />
                 </div>
                 <ValidationMessage For="@(() => registerModel.Username)" />
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <div class="input-shell">
-                    <span class="input-icon">&#64;</span>
-                    <InputText type="email" class="form-control" @bind-Value="registerModel.Email" autocomplete="email" />
+                <label class="form-label" for="reg-email">Email Address</label>
+                <div class="input-shell @GetInputState(registerModel, nameof(registerModel.Email))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+                            <path d="M3 7l9 6l9 -6"></path>
+                        </svg>
+                    </span>
+                    <InputText id="reg-email" type="email" class="form-control" @bind-Value="registerModel.Email"
+                               autocomplete="email" placeholder="Enter your email" aria-required="true" />
                 </div>
                 <ValidationMessage For="@(() => registerModel.Email)" />
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <div class="input-shell">
-                    <span class="input-icon">PW</span>
-                    <InputText type="password" class="form-control" @bind-Value="registerModel.Password" autocomplete="new-password" />
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label" for="reg-password">Password</label>
+                    <span class="input-hint">Require strong operator keys</span>
+                </div>
+                <div class="input-shell @GetInputState(registerModel, nameof(registerModel.Password))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"></path>
+                            <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path>
+                            <path d="M8 11v-4a4 4 0 1 1 8 0v4"></path>
+                        </svg>
+                    </span>
+                    <InputText id="reg-password" type="@(showPassword ? "text" : "password")" class="form-control" @bind-Value="registerModel.Password"
+                               autocomplete="new-password" placeholder="Create a password" aria-required="true" />
+                    <button type="button" class="password-toggle" @onclick="TogglePassword" aria-pressed="@showPassword" aria-label="Toggle password visibility">
+                        @if (showPassword)
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.58 10.58a2 2 0 0 0 2.83 2.83"></path>
+                                <path d="M9.88 5.08a10 10 0 0 1 9.05 5.44a9.97 9.97 0 0 1 -1.5 2.14"></path>
+                                <path d="M6.15 6.15a10.06 10.06 0 0 0 -3.15 4.37a10 10 0 0 0 12.65 4.99"></path>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4 -8 11 -8s11 8 11 8s-4 8 -11 8s-11 -8 -11 -8"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        }
+                    </button>
                 </div>
                 <ValidationMessage For="@(() => registerModel.Password)" />
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Confirm Password</label>
-                <div class="input-shell">
-                    <span class="input-icon">PW</span>
-                    <InputText type="password" class="form-control" @bind-Value="confirmPassword" autocomplete="new-password" />
+                <label class="form-label" for="reg-confirm">Confirm Password</label>
+                <div class="input-shell @(string.IsNullOrEmpty(confirmPasswordError) ? string.Empty : "input-error")">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
+                            <path d="M12 11m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                            <path d="M12 12l0 2.5"></path>
+                        </svg>
+                    </span>
+                    <InputText id="reg-confirm" type="@(showConfirmPassword ? "text" : "password")" class="form-control" @bind-Value="confirmPassword"
+                               autocomplete="new-password" placeholder="Confirm your password" aria-required="true" />
+                    <button type="button" class="password-toggle" @onclick="ToggleConfirmPassword" aria-pressed="@showConfirmPassword" aria-label="Toggle confirmation visibility">
+                        @if (showConfirmPassword)
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.58 10.58a2 2 0 0 0 2.83 2.83"></path>
+                                <path d="M9.88 5.08a10 10 0 0 1 9.05 5.44a9.97 9.97 0 0 1 -1.5 2.14"></path>
+                                <path d="M6.15 6.15a10.06 10.06 0 0 0 -3.15 4.37a10 10 0 0 0 12.65 4.99"></path>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4 -8 11 -8s11 8 11 8s-4 8 -11 8s-11 -8 -11 -8"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        }
+                    </button>
                 </div>
                 @if (!string.IsNullOrEmpty(confirmPasswordError))
                 {
-                    <div class="text-danger small mt-1">@confirmPasswordError</div>
+                    <div class="text-danger small mt-1" role="alert">@confirmPasswordError</div>
                 }
             </div>
-            <button class="btn btn-primary w-100 py-2" type="submit" disabled="@isLoading">
+
+            @{
+                var strength = Strength;
+            }
+            <div class="password-meta" aria-live="polite">
+                <div class="strength-meter">
+                    <div class="strength-meter-track">
+                        <div class="strength-meter-bar strength-@strength.Label.ToLowerInvariant()" style="width: @strength.Percent%;"></div>
+                    </div>
+                    <span class="strength-label">@strength.Label password</span>
+                </div>
+                <ul class="password-requirements">
+                    <li class="@RequirementClass(strength.HasLength)">At least 8 characters</li>
+                    <li class="@RequirementClass(strength.HasCase)">Upper & lower case</li>
+                    <li class="@RequirementClass(strength.HasNumber)">Include a number</li>
+                    <li class="@RequirementClass(strength.HasSymbol)">Include a symbol</li>
+                    <li class="@RequirementClass(strength.HasLong)">12+ characters for best score</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary w-100 btn-lg" type="submit" disabled="@isLoading">
                 @if (isLoading)
                 {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span class="spinner"></span>
+                    <span>Creating account...</span>
                 }
-                Create account
+                else
+                {
+                    <span>Create Account</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"></path>
+                        <path d="M13 18l6 -6"></path>
+                        <path d="M13 6l6 6"></path>
+                    </svg>
+                }
             </button>
         </EditForm>
 
-        <div class="auth-footer small text-center mt-3">
-            Your profile instantly unlocks dashboard metrics and CRUD screens.
+        <div class="auth-footer" role="status">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                <path d="M9 12l2 2l4 -4"></path>
+            </svg>
+            <span>Your operator account provisions instantly. Full control applies immediately.</span>
         </div>
     </div>
 </div>
 
 @code {
     private RegisterRequestDto registerModel = new();
+    private EditContext? registerEditContext;
     private string confirmPassword = string.Empty;
     private string? error;
     private string? confirmPasswordError;
     private string? returnUrl;
     private bool isLoading;
+    private bool showPassword;
+    private bool showConfirmPassword;
+    private bool showSuccessToast;
+
+    private record PasswordStrength(string Label, int Percent, bool HasLength, bool HasCase, bool HasNumber, bool HasSymbol, bool HasLong);
+
+    protected override void OnInitialized()
+    {
+        registerEditContext = new EditContext(registerModel);
+        registerEditContext.OnFieldChanged += RegisterFieldChanged;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,6 +331,75 @@
             Navigation.NavigateTo("/dashboard", true);
         }
     }
+
+    private void RegisterFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        error = null;
+        UpdateConfirmPasswordError();
+        registerEditContext?.Validate();
+    }
+
+    private string RequirementClass(bool met) => met ? "requirement met" : "requirement";
+
+    private PasswordStrength Strength => EvaluatePassword(registerModel.Password);
+
+    private PasswordStrength EvaluatePassword(string? password)
+    {
+        password ??= string.Empty;
+        var hasLength = password.Length >= 8;
+        var hasLong = password.Length >= 12;
+        var hasCase = password.Any(char.IsUpper) && password.Any(char.IsLower);
+        var hasNumber = password.Any(char.IsDigit);
+        var hasSymbol = password.Any(ch => char.IsSymbol(ch) || char.IsPunctuation(ch));
+
+        var score = 0;
+        if (hasLength) score++;
+        if (hasLong) score++;
+        if (hasCase) score++;
+        if (hasNumber) score++;
+        if (hasSymbol) score++;
+
+        var label = score switch
+        {
+            >= 4 => "Strong",
+            3 => "Good",
+            2 => "Fair",
+            _ => "Weak"
+        };
+
+        var percent = Math.Clamp(score, 0, 5) * 20;
+
+        return new PasswordStrength(label, percent, hasLength, hasCase, hasNumber, hasSymbol, hasLong);
+    }
+
+    private string GetInputState(object model, string fieldName)
+    {
+        if (registerEditContext is null)
+        {
+            return string.Empty;
+        }
+
+        var field = new FieldIdentifier(model, fieldName);
+        var hasError = registerEditContext.GetValidationMessages(field).Any();
+        var isTouched = registerEditContext.IsModified(field);
+
+        if (hasError)
+        {
+            return "input-error";
+        }
+
+        return isTouched ? "input-valid" : string.Empty;
+    }
+
+    private void UpdateConfirmPasswordError()
+    {
+        confirmPasswordError = string.IsNullOrWhiteSpace(registerModel.Password) || string.IsNullOrWhiteSpace(confirmPassword)
+            ? null
+            : registerModel.Password == confirmPassword ? null : "Passwords do not match.";
+    }
+
+    private void TogglePassword() => showPassword = !showPassword;
+    private void ToggleConfirmPassword() => showConfirmPassword = !showConfirmPassword;
 
     private void CaptureReturnUrl()
     {
@@ -157,11 +427,16 @@
     private async Task HandleRegister()
     {
         error = null;
-        confirmPasswordError = null;
+        showSuccessToast = false;
+        UpdateConfirmPasswordError();
 
-        if (registerModel.Password != confirmPassword)
+        if (!string.IsNullOrEmpty(confirmPasswordError))
         {
-            confirmPasswordError = "Passwords do not match.";
+            return;
+        }
+
+        if (registerEditContext is not null && !registerEditContext.Validate())
+        {
             return;
         }
 
@@ -177,7 +452,18 @@
             return;
         }
 
+        showSuccessToast = true;
+
         var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
+        await Task.Delay(900);
         Navigation.NavigateTo(target, true);
+    }
+
+    public void Dispose()
+    {
+        if (registerEditContext is not null)
+        {
+            registerEditContext.OnFieldChanged -= RegisterFieldChanged;
+        }
     }
 }

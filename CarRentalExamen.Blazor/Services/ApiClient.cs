@@ -55,7 +55,7 @@ public class ApiClient
             var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
             if (auth is not null)
             {
-                await _tokenStorage.SetTokenAsync(auth.Token);
+                await _tokenStorage.SetTokenAsync(auth.Token, dto.RememberMe);
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
                 _authStateProvider?.NotifyAuthenticationStateChanged();
             }
@@ -87,7 +87,7 @@ public class ApiClient
             var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
             if (auth is not null)
             {
-                await _tokenStorage.SetTokenAsync(auth.Token);
+                await _tokenStorage.SetTokenAsync(auth.Token, true);
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
                 _authStateProvider?.NotifyAuthenticationStateChanged();
             }

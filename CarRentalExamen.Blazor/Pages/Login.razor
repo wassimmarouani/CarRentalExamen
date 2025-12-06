@@ -3,102 +3,242 @@
 @layout AuthLayout
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@implements IDisposable
+@using System.Linq
 
-<PageTitle>Login</PageTitle>
+<PageTitle>Login - Velocity Fleet</PageTitle>
 
-<div class="auth-grid">
+<div class="auth-grid auth-grid-premium">
     <div class="auth-aside">
+        <div class="brand-lockup mb-4">
+            <div class="brand-mark">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+                </svg>
+            </div>
+            <div>
+                <div class="eyebrow text-soft">Velocity Fleet</div>
+                <div class="brand-title">Car Rental Command</div>
+                <div class="small text-soft">Operator console</div>
+            </div>
+            <span class="badge-secure ms-auto">
+                <span class="status-dot"></span>
+                Secure Portal
+            </span>
+        </div>
+
         <div class="pill mb-3">
             <span class="pulse-dot"></span>
-            Live fleet control
+            Fleet Command Active
         </div>
-        <h2 class="mb-2">Re-enter the cockpit</h2>
-        <p class="mb-3">View the dashboard, move cars between states, and approve reservations without leaving this screen.</p>
+
+        <h2>Welcome back, operator</h2>
+        <p class="mb-4">Operators have authorized access to manage vehicles, bookings, customers, and analytics. Activity is encrypted and auditable.</p>
+
         <div class="auth-bullets">
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M3 12l2 -2m0 0l7 -7l7 7m-9 -5v12m5 0h6a2 2 0 0 0 2 -2v-6"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Dashboard first</div>
-                    <div class="small">Revenue, rentals, and availability at a glance.</div>
+                    <div class="fw-semibold">Dashboard Overview</div>
+                    <div class="small">Monitor live utilization, booking trends, and fleet readiness.</div>
                 </div>
             </div>
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"></path>
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                        <path d="M9 12l.01 0"></path>
+                        <path d="M13 12l2 0"></path>
+                        <path d="M9 16l.01 0"></path>
+                        <path d="M13 16l2 0"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Full CRUD unlocked</div>
-                    <div class="small">Cars, customers, reservations, and returns.</div>
+                    <div class="fw-semibold">Full Fleet Control</div>
+                    <div class="small">Authorize updates across vehicles, customers, reservations, and billing.</div>
                 </div>
             </div>
             <div class="auth-bullet">
-                <span class="bullet-dot"></span>
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                        <path d="M12 12l3 2"></path>
+                        <path d="M12 7v5"></path>
+                    </svg>
+                </span>
                 <div>
-                    <div class="fw-semibold">Instant feedback</div>
-                    <div class="small">Statuses update live as you save.</div>
+                    <div class="fw-semibold">Real-time Updates</div>
+                    <div class="small">Live status changes, secure notifications, and audit-ready logs.</div>
                 </div>
             </div>
         </div>
+
         <div class="stat-strip">
-            <div class="stat-chip">Availability controls</div>
-            <div class="stat-chip">Fleet visibility</div>
-            <div class="stat-chip">Secure tokens</div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                    <path d="M12 8v4l2 2"></path>
+                </svg>
+                24/7 Access
+            </div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 17l0 4"></path>
+                    <path d="M8 21l8 0"></path>
+                    <path d="M3 13l4 0l2 -7l6 14l2 -7l4 0"></path>
+                </svg>
+                Live Analytics
+            </div>
+            <div class="stat-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
+                    <path d="M12 11m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                    <path d="M12 12l0 2.5"></path>
+                </svg>
+                Secure Auth
+            </div>
         </div>
     </div>
 
-    <div class="auth-card">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-                <div class="eyebrow">Sign in</div>
-                <h4 class="mb-0">Return to the dashboard</h4>
-                <div class="auth-subtext small">Log in to manage rentals and fleet activity.</div>
+    <div class="auth-card auth-card-premium">
+        <div class="auth-card-header">
+            <div class="auth-card-title">
+                <div class="authority-chip">
+                    <span class="status-dot"></span>
+                    Operator Access Enabled
+                </div>
+                <div class="eyebrow mt-2">Authentication</div>
+                <h4>Sign in to continue</h4>
+                <p class="auth-subtext">Sign in to access full fleet command and system controls.</p>
             </div>
-            <div class="text-end auth-subtext small">
-                New here?
-                <a href="/register">Create an account</a>
+            <div class="auth-nav">
+                <span class="auth-nav-text">New operator?</span>
+                <a href="/register" class="auth-nav-link">Create account</a>
             </div>
         </div>
 
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="pt-2">
+        <EditForm EditContext="loginEditContext" OnValidSubmit="HandleLogin" class="auth-form" novalidate>
             <DataAnnotationsValidator />
+
             @if (!string.IsNullOrEmpty(error))
             {
-                <div class="alert soft-alert">@error</div>
+                <div class="alert soft-alert" role="alert">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 9v2m0 4v.01"></path>
+                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                    </svg>
+                    @error
+                </div>
             }
+
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <div class="input-shell">
-                    <span class="input-icon">ID</span>
-                    <InputText class="form-control" @bind-Value="loginModel.Username" autocomplete="username" />
+                <label class="form-label" for="username">Username</label>
+                <div class="input-shell @GetInputState(loginModel, nameof(loginModel.Username))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                            <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                            <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"></path>
+                        </svg>
+                    </span>
+                    <InputText id="username" class="form-control" @bind-Value="loginModel.Username"
+                               autocomplete="username" placeholder="Enter your username" aria-required="true" />
                 </div>
                 <ValidationMessage For="@(() => loginModel.Username)" />
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <div class="input-shell">
-                    <span class="input-icon">PW</span>
-                    <InputText type="password" class="form-control" @bind-Value="loginModel.Password" autocomplete="current-password" />
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label" for="password">Password</label>
+                    <span class="input-hint">Encrypted sign-in</span>
+                </div>
+                <div class="input-shell @GetInputState(loginModel, nameof(loginModel.Password))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"></path>
+                            <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path>
+                            <path d="M8 11v-4a4 4 0 1 1 8 0v4"></path>
+                        </svg>
+                    </span>
+                    <InputText id="password" type="@(showPassword ? "text" : "password")" class="form-control" @bind-Value="loginModel.Password"
+                               autocomplete="current-password" placeholder="Enter your password" aria-required="true" />
+                    <button type="button" class="password-toggle" @onclick="TogglePassword" aria-pressed="@showPassword" aria-label="Toggle password visibility">
+                        @if (showPassword)
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.58 10.58a2 2 0 0 0 2.83 2.83"></path>
+                                <path d="M9.88 5.08a10 10 0 0 1 9.05 5.44a9.97 9.97 0 0 1 -1.5 2.14"></path>
+                                <path d="M6.15 6.15a10.06 10.06 0 0 0 -3.15 4.37a10 10 0 0 0 12.65 4.99"></path>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4 -8 11 -8s11 8 11 8s-4 8 -11 8s-11 -8 -11 -8"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        }
+                    </button>
                 </div>
                 <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
-            <button class="btn btn-primary w-100 py-2" type="submit" disabled="@isLoading">
+
+            <div class="auth-form-row">
+                <label class="form-check align-items-center gap-2 m-0">
+                    <InputCheckbox class="form-check-input" @bind-Value="loginModel.RememberMe" />
+                    <span class="form-check-label">Remember me on this console</span>
+                </label>
+                <a class="auth-nav-link" href="mailto:security@velocityfleet.ops?subject=Password%20reset%20request">Forgot password?</a>
+            </div>
+
+            <button class="btn btn-primary w-100 btn-lg" type="submit" disabled="@isLoading">
                 @if (isLoading)
                 {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span class="spinner"></span>
+                    <span>Authenticating...</span>
                 }
-                Enter dashboard
+                else
+                {
+                    <span>Access Dashboard</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"></path>
+                        <path d="M13 18l6 -6"></path>
+                        <path d="M13 6l6 6"></path>
+                    </svg>
+                }
             </button>
         </EditForm>
 
-        <div class="auth-footer small text-center mt-3">
-            Tip: keep credentials safe. Tokens clear automatically when you log out.
+        <div class="auth-footer" role="status">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
+            </svg>
+            <span>Encrypted operator session. Tokens auto-expire on logout.</span>
         </div>
     </div>
 </div>
 
 @code {
-    private LoginRequestDto loginModel = new();
+    private LoginRequestDto loginModel = new() { RememberMe = true };
+    private EditContext? loginEditContext;
     private string? error;
     private string? returnUrl;
     private bool isLoading;
+    private bool showPassword;
+
+    protected override void OnInitialized()
+    {
+        loginEditContext = new EditContext(loginModel);
+        loginEditContext.OnFieldChanged += HandleLoginFieldChanged;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,6 +249,33 @@
             Navigation.NavigateTo("/dashboard", true);
         }
     }
+
+    private void HandleLoginFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        error = null;
+        loginEditContext?.Validate();
+    }
+
+    private string GetInputState(object model, string fieldName)
+    {
+        if (loginEditContext is null)
+        {
+            return string.Empty;
+        }
+
+        var field = new FieldIdentifier(model, fieldName);
+        var hasError = loginEditContext.GetValidationMessages(field).Any();
+        var isTouched = loginEditContext.IsModified(field);
+
+        if (hasError)
+        {
+            return "input-error";
+        }
+
+        return isTouched ? "input-valid" : string.Empty;
+    }
+
+    private void TogglePassword() => showPassword = !showPassword;
 
     private void CaptureReturnUrl()
     {
@@ -136,6 +303,12 @@
     private async Task HandleLogin()
     {
         error = null;
+
+        if (loginEditContext is not null && !loginEditContext.Validate())
+        {
+            return;
+        }
+
         isLoading = true;
 
         var (result, errorMessage) = await Api.LoginAsync(loginModel);
@@ -150,5 +323,13 @@
 
         var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
         Navigation.NavigateTo(target, true);
+    }
+
+    public void Dispose()
+    {
+        if (loginEditContext is not null)
+        {
+            loginEditContext.OnFieldChanged -= HandleLoginFieldChanged;
+        }
     }
 }

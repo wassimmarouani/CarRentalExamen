@@ -1,85 +1,211 @@
 @page "/reservations/details/{id:int}"
 @attribute [Authorize]
 @inject ApiClient Api
+@inject NavigationManager Navigation
+@using System.Globalization
 
 <PageTitle>Reservation Details</PageTitle>
 
-@if (reservation is null)
+<div class="command-shell">
+    @if (isLoading)
+    {
+        <div class="card-compact">
+            <div class="skeleton" style="height:20px;width:60%;"></div>
+            <div class="skeleton" style="height:14px;width:40%;"></div>
+        </div>
+    }
+    else if (reservation is null)
+    {
+        <div class="alert alert-danger">Reservation not found.</div>
+    }
+    else
+    {
+        <div class="entity-hero entity-header">
+            <div>
+                <div class="eyebrow text-uppercase">Booking</div>
+                <h2 class="title mb-2">Reservation #@reservation.Id</h2>
+                <p class="dash-subtext mb-2">Operator access enabled. Confirm, pickup, or cancel with audit-ready actions.</p>
+                <div class="entity-meta">
+                    <span class="meta-chip">@reservation.Car</span>
+                    <span class="meta-chip">@reservation.Customer</span>
+                    <span class="meta-chip">@FormatPeriod(reservation.StartDate, reservation.EndDate)</span>
+                    <span class="meta-chip">Total: $@reservation.TotalPrice.ToString("N0")</span>
+                </div>
+            </div>
+            <div class="cta-stack">
+                <span class="role-chip"><span class="status-dot"></span> Operator Access</span>
+                <span class="status-pill @GetStatusClass(reservation.Status)">@reservation.Status</span>
+                @if (PrimaryCta is not null)
+                {
+                    <button class="btn btn-primary" @onclick="PerformPrimaryAction">@PrimaryCta</button>
+                }
+                <div class="actions-dropdown">
+                    <button class="btn btn-outline-secondary" @onclick='() => ToggleMenu("res")'>Actions ▾</button>
+                    @if (activeMenu == "res")
+                    {
+                        <div class="actions-dropdown-menu">
+                            <button @onclick='() => Navigation.NavigateTo("/reservations/create")'>Edit</button>
+                            <button @onclick="() => showCancelConfirm = true">Cancel</button>
+                            <button>Refund</button>
+                            <button>Print contract</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Timeline</div>
+                    <div class="timeline">
+                        <div class="timeline-step"><span class="dot"></span><span>Booked</span></div>
+                        <div class="timeline-step"><span class="dot"></span><span>Pickup scheduled</span></div>
+                        <div class="timeline-step"><span class="dot"></span><span>Return planned</span></div>
+                    </div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Car</div>
+                    <div class="fw-semibold">@reservation.Car</div>
+                    <a class="auth-nav-link" href="/cars">View car profile</a>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Customer</div>
+                    <div class="fw-semibold">@reservation.Customer</div>
+                    <a class="auth-nav-link" href="/customers">View customer profile</a>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Price breakdown</div>
+                    <div class="d-flex justify-content-between">
+                        <span>Base</span><span>$@reservation.BasePrice.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Options</span><span>$@reservation.OptionsPrice.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Fees</span><span>$@ExtraFees.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-semibold">
+                        <span>Total</span><span>$@reservation.TotalPrice.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="tab-bar">
+                        <button class="tab-btn @(activeTab == "payments" ? "active" : string.Empty)" @onclick='() => activeTab = "payments"'>Payments</button>
+                        <button class="tab-btn @(activeTab == "activity" ? "active" : string.Empty)" @onclick='() => activeTab = "activity"'>Activity</button>
+                        <button class="tab-btn @(activeTab == "notes" ? "active" : string.Empty)" @onclick='() => activeTab = "notes"'>Notes</button>
+                    </div>
+                    @if (activeTab == "payments")
+                    {
+                        <ul class="list-group mb-3">
+                            @foreach (var p in reservation.Payments)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>@p.Method on @p.PaidAt.ToShortDateString()</span>
+                                    <span>$@p.Amount (@p.Status)</span>
+                                </li>
+                            }
+                        </ul>
+                        <EditForm Model="paymentModel" OnValidSubmit="AddPayment">
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <InputNumber class="form-control" @bind-Value="paymentModel.Amount" placeholder="Amount" />
+                                </div>
+                                <div class="col-md-4">
+                                    <InputText class="form-control" @bind-Value="paymentModel.Method" placeholder="Method" />
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-outline-success" type="submit">Add Payment</button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    }
+                    else if (activeTab == "activity")
+                    {
+                        <div class="audit-log">
+                            <div class="audit-item">Reservation viewed · now</div>
+                            <div class="audit-item">Status: @reservation.Status</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <textarea class="form-control" rows="4" placeholder="Operator notes (local only)" @bind="notes"></textarea>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Actions</div>
+                    <div class="d-grid gap-2">
+                        @if (PrimaryCta is not null)
+                        {
+                            <button class="btn btn-primary" @onclick="PerformPrimaryAction">@PrimaryCta</button>
+                        }
+                        <button class="btn btn-outline-success" @onclick="Confirm">Confirm</button>
+                        <button class="btn btn-outline-warning" @onclick="Pickup">Pickup</button>
+                        <button class="btn btn-outline-danger" @onclick='() => showCancelConfirm = true'>Cancel</button>
+                    </div>
+                    <div class="audit-hint mt-3">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path></svg>
+                        Operator actions are logged.
+                    </div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Audit log</div>
+                    <div class="audit-log">
+                        <div class="audit-item">Loaded details · now</div>
+                        <div class="audit-item">Status: @reservation.Status</div>
+                    </div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Return</div>
+                    <EditForm Model="returnModel" OnValidSubmit="Complete">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <InputNumber class="form-control mb-2" @bind-Value="returnModel.ReturnMileage" placeholder="Return mileage" />
+                            </div>
+                            <div class="col-md-6">
+                                <InputNumber class="form-control mb-2" @bind-Value="returnModel.ReturnFuelLevel" placeholder="Fuel level" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <InputNumber class="form-control mb-2" @bind-Value="returnModel.LateFees" placeholder="Late fees" />
+                            </div>
+                            <div class="col-md-4">
+                                <InputNumber class="form-control mb-2" @bind-Value="returnModel.DamageFees" placeholder="Damage fees" />
+                            </div>
+                            <div class="col-md-4">
+                                <InputNumber class="form-control mb-2" @bind-Value="returnModel.FuelFees" placeholder="Fuel fees" />
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <InputText class="form-control" @bind-Value="returnModel.Notes" placeholder="Notes" />
+                        </div>
+                        <button class="btn btn-outline-primary" type="submit">Complete & Return</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (showCancelConfirm && reservation is not null)
 {
-    <p>Loading...</p>
-}
-else
-{
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Reservation #@reservation.Id</h3>
-        <div>
-            <button class="btn btn-sm btn-success me-1" @onclick="Confirm">Confirm</button>
-            <button class="btn btn-sm btn-warning me-1" @onclick="Pickup">Pickup</button>
-            <button class="btn btn-sm btn-danger" @onclick="Cancel">Cancel</button>
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm cancellation</h5>
+            <p class="mb-3">Operator action required. Cancel reservation <strong>#@reservation.Id</strong>?</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick='() => showCancelConfirm = false'>Keep</button>
+                <button class="btn btn-danger" @onclick="Cancel">Cancel reservation</button>
+            </div>
         </div>
     </div>
-    <p><strong>Car:</strong> @reservation.Car</p>
-    <p><strong>Customer:</strong> @reservation.Customer</p>
-    <p><strong>Period:</strong> @reservation.StartDate.ToShortDateString() - @reservation.EndDate.ToShortDateString()</p>
-    <p><strong>Status:</strong> @reservation.Status</p>
-    <p><strong>Total Price:</strong> $@reservation.TotalPrice</p>
-
-    <h5>Options</h5>
-    <ul>
-        @foreach (var o in reservation.Options)
-        {
-            <li>@o.OptionName (@o.Quantity)x - $@o.PricePerDay /day</li>
-        }
-    </ul>
-
-    <h5>Payments</h5>
-    <ul class="list-group mb-3">
-        @foreach (var p in reservation.Payments)
-        {
-            <li class="list-group-item d-flex justify-content-between">
-                <span>@p.Method on @p.PaidAt.ToShortDateString()</span>
-                <span>$@p.Amount (@p.Status)</span>
-            </li>
-        }
-    </ul>
-    <EditForm Model="paymentModel" OnValidSubmit="AddPayment">
-        <div class="row g-2 mb-3">
-            <div class="col-md-4">
-                <InputNumber class="form-control" @bind-Value="paymentModel.Amount" placeholder="Amount" />
-            </div>
-            <div class="col-md-4">
-                <InputText class="form-control" @bind-Value="paymentModel.Method" placeholder="Method" />
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-success" type="submit">Add Payment</button>
-            </div>
-        </div>
-    </EditForm>
-
-    <h5>Return</h5>
-    <EditForm Model="returnModel" OnValidSubmit="Complete">
-        <div class="row">
-            <div class="col-md-3">
-                <InputNumber class="form-control mb-2" @bind-Value="returnModel.ReturnMileage" placeholder="Return mileage" />
-            </div>
-            <div class="col-md-3">
-                <InputNumber class="form-control mb-2" @bind-Value="returnModel.ReturnFuelLevel" placeholder="Fuel level" />
-            </div>
-            <div class="col-md-2">
-                <InputNumber class="form-control mb-2" @bind-Value="returnModel.LateFees" placeholder="Late fees" />
-            </div>
-            <div class="col-md-2">
-                <InputNumber class="form-control mb-2" @bind-Value="returnModel.DamageFees" placeholder="Damage fees" />
-            </div>
-            <div class="col-md-2">
-                <InputNumber class="form-control mb-2" @bind-Value="returnModel.FuelFees" placeholder="Fuel fees" />
-            </div>
-        </div>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="returnModel.Notes" placeholder="Notes" />
-        </div>
-        <button class="btn btn-outline-primary" type="submit">Complete & Return</button>
-    </EditForm>
 }
 
 @code {
@@ -87,6 +213,14 @@ else
     private ReservationDetailDto? reservation;
     private PaymentCreateDto paymentModel = new();
     private ReturnRequestDto returnModel = new();
+    private bool isLoading = true;
+    private string activeTab = "payments";
+    private string? activeMenu;
+    private bool showCancelConfirm;
+    private string notes = string.Empty;
+
+    private string? PrimaryCta => GetPrimaryCta(reservation?.Status);
+    private decimal ExtraFees => reservation is null ? 0 : Math.Max(0, reservation.TotalPrice - reservation.BasePrice - reservation.OptionsPrice);
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,8 +231,54 @@ else
 
     private async Task Load()
     {
+        isLoading = true;
         reservation = await Api.GetReservationAsync(id);
+        isLoading = false;
     }
+
+    private string FormatPeriod(DateTime start, DateTime end)
+    {
+        var culture = CultureInfo.InvariantCulture;
+        return $"{start:dd MMM yyyy} - {end:dd MMM yyyy}";
+    }
+
+    private string GetStatusClass(string status) => status.ToLowerInvariant() switch
+    {
+        "pending" => "status-pending",
+        "booked" => "status-pending",
+        "confirmed" => "status-confirmed",
+        "active" => "status-active",
+        "completed" => "status-completed",
+        "cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    private string? GetPrimaryCta(string? status) => status?.ToLowerInvariant() switch
+    {
+        "pending" or "booked" => "Confirm",
+        "confirmed" => "Pickup",
+        "active" => "Complete Return",
+        _ => null
+    };
+
+    private async Task PerformPrimaryAction()
+    {
+        var action = GetPrimaryCta(reservation?.Status);
+        if (action == "Confirm")
+        {
+            await Confirm();
+        }
+        else if (action == "Pickup")
+        {
+            await Pickup();
+        }
+        else if (action == "Complete Return")
+        {
+            await Complete();
+        }
+    }
+
+    private void ToggleMenu(string key) => activeMenu = activeMenu == key ? null : key;
 
     private async Task Confirm()
     {
@@ -109,6 +289,7 @@ else
     private async Task Cancel()
     {
         await Api.CancelReservationAsync(id);
+        showCancelConfirm = false;
         await Load();
     }
 

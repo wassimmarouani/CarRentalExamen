@@ -2,51 +2,141 @@
 @attribute [Authorize]
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@using System.Linq
 
 <PageTitle>Customers</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Customers</h3>
-    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/customers/edit")'>Add Customer</button>
-</div>
+<div class="command-shell">
+    <div class="page-head">
+        <div>
+            <div class="eyebrow text-uppercase">Customer Control</div>
+            <h2 class="title mb-2">Operators & customers</h2>
+            <p class="dash-subtext mb-2">Operator access enabled. Manage identities, contact info, and eligibility checks.</p>
+            <span class="badge-soft info">Operator action required</span>
+        </div>
+        <div class="page-actions">
+            <span class="role-chip" title="Operator — full fleet command authorized">
+                <span class="status-dot"></span> Operator Access
+            </span>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/customers/edit")'>Add customer</button>
+        </div>
+    </div>
 
-@if (customers is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var customer in customers)
+    <div class="toolbar">
+        <div class="search flex-grow-1">
+            <input class="form-control" placeholder="Search name, phone, email..." @bind="searchTerm" @bind:event="oninput" />
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label class="form-label m-0 small text-muted">Sort by</label>
+            <select class="form-select" style="min-width: 160px;" @bind="sortOption">
+                <option value="name">Name</option>
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-card">
+        @if (isLoading)
+        {
+            <div class="skeleton" style="height:16px;width:140px;margin-bottom:12px;"></div>
+            @for (var i = 0; i < 4; i++)
             {
-                <tr>
-                    <td>@customer.FirstName @customer.LastName</td>
-                    <td>@customer.Phone</td>
-                    <td>@customer.Email</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick='() => Navigation.NavigateTo($"/customers/details/{customer.Id}")'>Details</button>
-                        <button class="btn btn-sm btn-outline-primary me-1" @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>Edit</button>
-                    </td>
-                </tr>
+                <div class="skeleton" style="height:56px;margin-bottom:10px;"></div>
             }
-        </tbody>
-    </table>
-}
+        }
+        else if (!Filtered.Any())
+        {
+            <div class="text-center py-4 text-muted">No customers match your filters.</div>
+        }
+        else
+        {
+            <table class="table-command d-none d-md-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Paged)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@customer.FirstName @customer.LastName</td>
+                            <td>@customer.Phone</td>
+                            <td>@customer.Email</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="icon-btn" title="Details" @onclick='() => Navigation.NavigateTo($"/customers/details/{customer.Id}")'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M12 12l3 2"></path><path d="M12 7v5"></path></svg>
+                                    </button>
+                                    <button class="icon-btn" title="Edit" @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10 -10"></path><path d="M11 7h6v6"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-list d-block d-md-none">
+                @foreach (var customer in Paged)
+                {
+                    <div class="card-list-item">
+                        <div class="fw-semibold">@customer.FirstName @customer.LastName</div>
+                        <div class="text-muted small">@customer.Email</div>
+                        <div class="text-muted small">@customer.Phone</div>
+                        <div class="row-actions">
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/customers/details/{customer.Id}")'>Details</button>
+                            <button class="btn btn-outline-primary btn-sm" @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>Edit</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="pagination">
+                @for (var p = 1; p <= TotalPages; p++)
+                {
+                    <button class="page-btn @(page == p ? "active" : string.Empty)" @onclick='() => ChangePage(p)'>@p</button>
+                }
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     private List<Customer>? customers;
+    private string searchTerm = string.Empty;
+    private string sortOption = "name";
+    private int page = 1;
+    private const int PageSize = 8;
+    private bool isLoading = true;
+
+    private IEnumerable<Customer> Filtered => (customers ?? Enumerable.Empty<Customer>())
+        .Where(c =>
+            string.IsNullOrWhiteSpace(searchTerm) ||
+            $"{c.FirstName} {c.LastName}".Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            c.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            c.Phone.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(c => sortOption switch
+        {
+            "email" => c.Email,
+            "phone" => c.Phone,
+            _ => $"{c.FirstName} {c.LastName}"
+        });
+
+    private IEnumerable<Customer> Paged => Filtered.Skip((page - 1) * PageSize).Take(PageSize);
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(Filtered.Count() / (double)PageSize));
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         customers = await Api.GetCustomersAsync();
+        isLoading = false;
     }
+
+    private void ChangePage(int newPage) => page = newPage;
 }

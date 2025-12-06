@@ -1,58 +1,173 @@
 @page "/customers/details/{id:int}"
 @attribute [Authorize]
 @inject ApiClient Api
+@inject NavigationManager Navigation
 
 <PageTitle>Customer Details</PageTitle>
 
-@if (customer is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <h3>@customer.FirstName @customer.LastName</h3>
-    <p><strong>CIN/Passport:</strong> @customer.CinOrPassport</p>
-    <p><strong>License:</strong> @customer.LicenseNumber</p>
-    <p><strong>Phone:</strong> @customer.Phone</p>
-    <p><strong>Email:</strong> @customer.Email</p>
-
-    <h5>Reservations</h5>
-    @if (reservations.Count == 0)
+<div class="command-shell">
+    @if (isLoading)
     {
-        <p>No reservations yet.</p>
+        <div class="card-compact">
+            <div class="skeleton" style="height:20px;width:60%;"></div>
+            <div class="skeleton" style="height:14px;width:40%;"></div>
+        </div>
+    }
+    else if (customer is null)
+    {
+        <div class="alert alert-danger">Customer not found.</div>
     }
     else
     {
-        <table class="table table-sm">
-            <thead>
-            <tr>
-                <th>Car</th>
-                <th>Dates</th>
-                <th>Status</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var r in reservations)
-            {
-                <tr>
-                    <td>@r.CarId</td>
-                    <td>@r.StartDate.ToShortDateString() - @r.EndDate.ToShortDateString()</td>
-                    <td>@r.Status</td>
-                </tr>
-            }
-            </tbody>
-        </table>
+        <div class="entity-hero entity-header">
+            <div>
+                <div class="eyebrow text-uppercase">Customer profile</div>
+                <h2 class="title mb-2">@customer.FirstName @customer.LastName</h2>
+                <p class="dash-subtext mb-2">Operator access enabled. Identity, contact, and booking history.</p>
+                <div class="entity-meta">
+                    <span class="meta-chip">CIN/Passport: @customer.CinOrPassport</span>
+                    <span class="meta-chip">License: @customer.LicenseNumber</span>
+                    <span class="meta-chip">@customer.Phone</span>
+                    <span class="meta-chip">@customer.Email</span>
+                </div>
+            </div>
+            <div class="cta-stack">
+                <span class="role-chip"><span class="status-dot"></span> Operator Access</span>
+                <span class="status-pill @GetCustomerStatusClass(customerStatus)">@customerStatus</span>
+                <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/reservations/create")'>New Reservation</button>
+                <div class="actions-dropdown">
+                    <button class="btn btn-outline-secondary" @onclick='() => ToggleMenu("customer")'>Actions ▾</button>
+                    @if (activeMenu == "customer")
+                    {
+                        <div class="actions-dropdown-menu">
+                            <button @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>Edit Profile</button>
+                            <button>Verify Docs</button>
+                            <button class="text-danger">Flag Customer</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Identity</div>
+                    <div class="kpi-subtext">CIN/Passport</div>
+                    <div class="fw-semibold">@customer.CinOrPassport</div>
+                    <div class="kpi-subtext">License</div>
+                    <div class="fw-semibold">@customer.LicenseNumber</div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Contact</div>
+                    <div class="kpi-subtext">Phone</div>
+                    <div class="fw-semibold">@customer.Phone</div>
+                    <div class="kpi-subtext">Email</div>
+                    <div class="fw-semibold">@customer.Email</div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Summary</div>
+                    <div class="kpi-subtext">Total bookings</div>
+                    <div class="fw-semibold">@reservations.Count</div>
+                    <div class="kpi-subtext">Total spend</div>
+                    <div class="fw-semibold">$@reservations.Sum(r => r.TotalPrice)</div>
+                    <div class="kpi-subtext">Cancellations</div>
+                    <div class="fw-semibold">@reservations.Count(r => r.Status == ReservationStatus.Cancelled)</div>
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="tab-bar">
+                        <button class="tab-btn @(activeTab == "reservations" ? "active" : string.Empty)" @onclick='() => activeTab = "reservations"'>Reservations</button>
+                        <button class="tab-btn @(activeTab == "payments" ? "active" : string.Empty)" @onclick='() => activeTab = "payments"'>Payments</button>
+                        <button class="tab-btn @(activeTab == "notes" ? "active" : string.Empty)" @onclick='() => activeTab = "notes"'>Notes</button>
+                    </div>
+                    @if (activeTab == "reservations")
+                    {
+                        if (!reservations.Any())
+                        {
+                            <div class="empty-state">No reservations yet.</div>
+                        }
+                        else
+                        {
+                            <div class="card-list">
+                                @foreach (var r in reservations.OrderByDescending(r => r.StartDate))
+                                {
+                                    <div class="card-list-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-semibold">Car #@r.CarId</div>
+                                                <div class="text-muted small">@r.StartDate:dd MMM yyyy - @r.EndDate:dd MMM yyyy</div>
+                                            </div>
+                                            <span class="status-pill @GetStatusClass(r.Status)">@r.Status</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else if (activeTab == "payments")
+                    {
+                        <div class="empty-state">Payments and invoices summary coming soon.</div>
+                    }
+                    else
+                    {
+                        <textarea class="form-control" rows="4" placeholder="Operator notes (local only)" @bind="notes"></textarea>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Risk & Flags</div>
+                    <div class="empty-state">No incidents reported.</div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Audit log</div>
+                    <div class="audit-log">
+                        <div class="audit-item">Profile viewed · now</div>
+                        <div class="audit-item">No edits yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
-}
+</div>
 
 @code {
     [Parameter] public int id { get; set; }
     private Customer? customer;
     private List<Reservation> reservations = new();
+    private bool isLoading = true;
+    private string activeTab = "reservations";
+    private string? activeMenu;
+    private string notes = string.Empty;
+    private string customerStatus => reservations.Any() ? "Verified" : "Pending";
 
     protected override async Task OnInitializedAsync()
     {
         customer = await Api.GetCustomerAsync(id);
         reservations = await Api.GetCustomerReservationsAsync(id);
+        isLoading = false;
     }
+
+    private string GetStatusClass(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Pending => "status-pending",
+        ReservationStatus.Confirmed => "status-confirmed",
+        ReservationStatus.Active => "status-active",
+        ReservationStatus.Completed => "status-completed",
+        ReservationStatus.Cancelled => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    private string GetCustomerStatusClass(string status) => status.ToLowerInvariant() switch
+    {
+        "verified" => "status-active",
+        "blacklisted" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    private void ToggleMenu(string key) => activeMenu = activeMenu == key ? null : key;
 }

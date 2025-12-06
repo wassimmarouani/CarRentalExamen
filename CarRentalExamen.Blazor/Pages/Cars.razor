@@ -1,73 +1,223 @@
-@page "/cars"
+﻿@page "/cars"
 @attribute [Authorize]
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@using System.Linq
 
 <PageTitle>Cars</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Cars</h3>
-    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/cars/edit")'>Add Car</button>
-</div>
+<div class="command-shell">
+    <div class="page-head">
+        <div>
+            <div class="eyebrow text-uppercase">Fleet control</div>
+            <h2 class="title mb-2">Cars inventory</h2>
+            <p class="dash-subtext mb-2">Operator access enabled. Manage vehicles, pricing, and status with full audit.</p>
+            <span class="badge-soft info">Operator action required</span>
+        </div>
+        <div class="page-actions">
+            <span class="role-chip" title="Operator - full fleet command authorized">
+                <span class="status-dot"></span> Operator Access
+            </span>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/cars/edit")'>Add Car</button>
+        </div>
+    </div>
 
-<div class="mb-3">
-    <label class="form-label">Filter by status</label>
-    <select class="form-select" @onchange="OnStatusChange">
-        <option value="">All</option>
-        @foreach (var s in Enum.GetValues<CarStatus>())
-        {
-            <option value="@s">@s</option>
-        }
-    </select>
-</div>
-
-@if (cars is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Plate</th>
-                <th>Model</th>
-                <th>Price / day</th>
-                <th>Status</th>
-                <th>Mileage</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var car in cars)
+    <div class="toolbar">
+        <div class="search flex-grow-1">
+            <input class="form-control" placeholder="Search plate, model, brand..." @bind="searchTerm" @bind:event="oninput" />
+        </div>
+        <div class="filter-chips">
+            @foreach (var chip in statusChips)
             {
-                <tr>
-                    <td>@car.PlateNumber</td>
-                    <td>@car.Make @car.Model (@car.Year)</td>
-                    <td>$@car.DailyPrice</td>
-                    <td>
-                        <select class="form-select form-select-sm" @onchange="e => StatusChanged(e, car.Id)">
-                            @foreach (var s in Enum.GetValues<CarStatus>())
-                            {
-                                <option value="@s" selected="@(s == car.Status)">@s</option>
-                            }
-                        </select>
-                    </td>
-                    <td>@car.Mileage km</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>Details</button>
-                        <button class="btn btn-sm btn-outline-primary me-1" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick='() => Delete(car.Id)'>Delete</button>
-                    </td>
-                </tr>
+                <button class="filter-chip @(statusFilter == chip.Value ? "active" : string.Empty)" @onclick='() => SetStatusFilter(chip.Value)'>
+                    @chip.Label
+                </button>
             }
-        </tbody>
-    </table>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label class="form-label m-0 small text-muted">Sort by</label>
+            <select class="form-select" style="min-width: 160px;" @bind="sortOption">
+                <option value="price">Price / day</option>
+                <option value="mileage">Mileage</option>
+                <option value="status">Status</option>
+                <option value="year">Year</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-card">
+        @if (isLoading)
+        {
+            <div class="skeleton" style="height:16px;width:140px;margin-bottom:12px;"></div>
+            @for (var i = 0; i < 4; i++)
+            {
+                <div class="skeleton" style="height:56px;margin-bottom:10px;"></div>
+            }
+        }
+        else if (!filteredCars.Any())
+        {
+            <div class="text-center py-4 text-muted">No cars match your filters yet.</div>
+        }
+        else
+        {
+            <table class="table-command d-none d-md-table">
+                <thead>
+                    <tr>
+                        <th>Plate</th>
+                        <th>Model</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Mileage</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var car in PagedCars)
+                    {
+                        <tr>
+                            <td class="fw-semibold mono">@car.PlateNumber</td>
+                            <td>
+                                <div class="fw-semibold">@car.Make @car.Model</div>
+                                <div class="text-muted small">@car.Year</div>
+                            </td>
+                            <td class="fw-semibold">$@car.DailyPrice.ToString("N0") / day</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-pill @GetStatusClass(car.Status)">@car.Status</span>
+                                    <div class="dropdown">
+                                        <button class="icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @foreach (var status in Enum.GetValues<CarStatus>())
+                                            {
+                                                <li>
+                                                    <button class="dropdown-item" @onclick='() => QuickUpdateStatus(car.Id, status)'>@status</button>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@FormatMileage(car.Mileage)</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="icon-btn" title="Details" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M12 12l3 2"></path><path d="M12 7v5"></path></svg>
+                                    </button>
+                                    <button class="icon-btn" title="Edit" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10 -10"></path><path d="M11 7h6v6"></path></svg>
+                                    </button>
+                                    <button class="icon-btn danger" title="Delete" @onclick='() => AskDelete(car)'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3h6v3"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-list d-block d-md-none">
+                @foreach (var car in PagedCars)
+                {
+                    <div class="card-list-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold mono">@car.PlateNumber</div>
+                                <div class="text-muted small">@car.Make @car.Model (@car.Year)</div>
+                            </div>
+                            <span class="status-pill @GetStatusClass(car.Status)">@car.Status</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>$@car.DailyPrice.ToString("N0") / day</span>
+                            <span>@FormatMileage(car.Mileage)</span>
+                        </div>
+                        <div class="row-actions">
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>Details</button>
+                            <button class="btn btn-outline-primary btn-sm" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit</button>
+                            <button class="btn btn-outline-danger btn-sm" @onclick='() => AskDelete(car)'>Delete</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="pagination">
+                @for (var p = 1; p <= TotalPages; p++)
+                {
+                    <button class="page-btn @(page == p ? "active" : string.Empty)" @onclick='() => ChangePage(p)'>@p</button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (showDeleteConfirm && pendingDelete is not null)
+{
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm deletion</h5>
+            <p class="mb-3">Operator action required. Delete <strong>@pendingDelete!.Make @pendingDelete!.Model</strong> (@pendingDelete!.PlateNumber)?</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick="CancelDelete">Cancel</button>
+                <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (toastMessage is not null)
+{
+    <div class="toast-stack">
+        <div class="toast">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M9 12l2 2l4 -4"></path></svg>
+            <span>@toastMessage</span>
+        </div>
+    </div>
 }
 
 @code {
     private List<Car>? cars;
-    private CarStatus? currentStatus;
+    private string searchTerm = string.Empty;
+    private CarStatus? statusFilter;
+    private string sortOption = "price";
+    private bool isLoading = true;
+    private int page = 1;
+    private const int PageSize = 6;
+    private bool showDeleteConfirm;
+    private Car? pendingDelete;
+    private string? toastMessage;
+
+    private readonly List<(string Label, CarStatus? Value)> statusChips = new()
+    {
+        ("All", null),
+        ("Available", CarStatus.Available),
+        ("Reserved", CarStatus.Reserved),
+        ("Rented", CarStatus.Rented),
+        ("Maintenance", CarStatus.Maintenance)
+    };
+
+    private IEnumerable<Car> filteredCars => (cars ?? Enumerable.Empty<Car>())
+        .Where(c =>
+            (string.IsNullOrWhiteSpace(searchTerm) ||
+            c.PlateNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            c.Make.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            c.Model.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (!statusFilter.HasValue || c.Status == statusFilter.Value))
+        .OrderByDescending(c => sortOption switch
+        {
+            "price" => c.DailyPrice,
+            "mileage" => c.Mileage,
+            "status" => (int)c.Status,
+            "year" => c.Year,
+            _ => c.DailyPrice
+        });
+
+    private IEnumerable<Car> PagedCars => filteredCars
+        .Skip((page - 1) * PageSize)
+        .Take(PageSize);
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(filteredCars.Count() / (double)PageSize));
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,30 +226,72 @@ else
 
     private async Task LoadCars()
     {
-        cars = await Api.GetCarsAsync(currentStatus);
+        isLoading = true;
+        cars = await Api.GetCarsAsync(statusFilter);
+        isLoading = false;
+        page = 1;
     }
 
-    private async Task OnStatusChange(ChangeEventArgs e)
+    private void SetStatusFilter(CarStatus? status)
     {
-        currentStatus = string.IsNullOrEmpty(e.Value?.ToString()) ? null : Enum.Parse<CarStatus>(e.Value!.ToString()!);
-        await LoadCars();
+        statusFilter = status;
+        page = 1;
     }
 
-    private async Task Delete(int id)
+    private string GetStatusClass(CarStatus status) => status switch
     {
-        await Api.DeleteCarAsync(id);
-        await LoadCars();
-    }
+        CarStatus.Available => "status-available",
+        CarStatus.Reserved => "status-reserved",
+        CarStatus.Rented => "status-rented",
+        CarStatus.Maintenance => "status-maintenance",
+        _ => string.Empty
+    };
 
-    private async Task UpdateStatus(int id, CarStatus status)
+    private string FormatMileage(int mileage) => $"{mileage:N0} km";
+
+    private async Task QuickUpdateStatus(int id, CarStatus status)
     {
         await Api.UpdateCarStatusAsync(id, status);
         await LoadCars();
+        ShowToast("Status updated");
     }
 
-    private async Task StatusChanged(ChangeEventArgs e, int carId)
+    private void AskDelete(Car car)
     {
-        var parsed = Enum.TryParse<CarStatus>(e.Value?.ToString(), out var status) ? status : CarStatus.Available;
-        await UpdateStatus(carId, parsed);
+        pendingDelete = car;
+        showDeleteConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        pendingDelete = null;
+        showDeleteConfirm = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (pendingDelete is null) return;
+        await Api.DeleteCarAsync(pendingDelete.Id);
+        showDeleteConfirm = false;
+        pendingDelete = null;
+        await LoadCars();
+        ShowToast("Car deleted");
+    }
+
+    private void ChangePage(int newPage)
+    {
+        page = newPage;
+    }
+
+    private void ShowToast(string message)
+    {
+        toastMessage = message;
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(1800);
+            toastMessage = null;
+            StateHasChanged();
+        });
     }
 }
+

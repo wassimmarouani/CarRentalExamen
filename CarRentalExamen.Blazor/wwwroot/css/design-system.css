@@ -132,6 +132,12 @@
     --vf-space-8: var(--brand-space-8);
     --vf-space-10: var(--brand-space-10);
     --vf-space-12: var(--brand-space-12);
+    --space-xs: var(--vf-space-1);
+    --space-sm: var(--vf-space-2);
+    --space-md: var(--vf-space-4);
+    --space-lg: var(--vf-space-6);
+    --space-xl: var(--vf-space-8);
+    --space-2xl: var(--vf-space-12);
     --vf-z-dropdown: 100;
     --vf-z-sticky: 200;
     --vf-z-modal: 300;

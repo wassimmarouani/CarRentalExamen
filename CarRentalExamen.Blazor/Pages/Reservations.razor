@@ -2,53 +2,168 @@
 @attribute [Authorize]
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@using System.Globalization
+@using System.Linq
 
 <PageTitle>Reservations</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Reservations</h3>
-    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/reservations/create")'>Create</button>
-</div>
+<div class="command-shell">
+    <div class="page-head">
+        <div>
+            <div class="eyebrow text-uppercase">Booking Control</div>
+            <h2 class="title mb-2">Reservations</h2>
+            <p class="dash-subtext mb-2">Operator access enabled. Monitor bookings, confirm pickups, and manage cancellations with audit-ready logs.</p>
+            <span class="badge-soft info">Operator action required</span>
+        </div>
+        <div class="page-actions">
+            <span class="role-chip" title="Operator — full fleet command authorized">
+                <span class="status-dot"></span> Operator Access
+            </span>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/reservations/create")'>New reservation</button>
+        </div>
+    </div>
 
-@if (reservations is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Car</th>
-                <th>Customer</th>
-                <th>Period</th>
-                <th>Status</th>
-                <th>Total</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var r in reservations)
+    <div class="toolbar">
+        <div class="search flex-grow-1">
+            <input class="form-control" placeholder="Search car, customer, status..." @bind="searchTerm" @bind:event="oninput" />
+        </div>
+        <div class="filter-chips">
+            @foreach (var chip in statusChips)
             {
-                <tr>
-                    <td>@r.Car</td>
-                    <td>@r.Customer</td>
-                    <td>@r.StartDate.ToShortDateString() - @r.EndDate.ToShortDateString()</td>
-                    <td><span class="badge bg-secondary">@r.Status</span></td>
-                    <td>$@r.TotalPrice</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick='() => Navigation.NavigateTo($"/reservations/details/{r.Id}")'>Details</button>
-                        <button class="btn btn-sm btn-outline-success me-1" @onclick='() => Confirm(r.Id)'>Confirm</button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick='() => Cancel(r.Id)'>Cancel</button>
-                    </td>
-                </tr>
+                <button class="filter-chip @(statusFilter == chip ? "active" : string.Empty)" @onclick='() => SetStatusFilter(chip)'>
+                    @chip
+                </button>
             }
-        </tbody>
-    </table>
-}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label class="form-label m-0 small text-muted">Sort by</label>
+            <select class="form-select" style="min-width: 160px;" @bind="sortOption">
+                <option value="start">Start date</option>
+                <option value="end">End date</option>
+                <option value="total">Total</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-card">
+        @if (isLoading)
+        {
+            <div class="skeleton" style="height:16px;width:140px;margin-bottom:12px;"></div>
+            @for (var i = 0; i < 4; i++)
+            {
+                <div class="skeleton" style="height:56px;margin-bottom:10px;"></div>
+            }
+        }
+        else if (!Filtered.Any())
+        {
+            <div class="text-center py-4 text-muted">No reservations match your filters.</div>
+        }
+        else
+        {
+            <table class="table-command d-none d-md-table">
+                <thead>
+                    <tr>
+                        <th>Car</th>
+                        <th>Customer</th>
+                        <th>Period</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Paged)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@r.Car</td>
+                            <td>@r.Customer</td>
+                            <td>@FormatPeriod(r.StartDate, r.EndDate)</td>
+                            <td><span class="status-pill @GetStatusClass(r.Status)">@r.Status</span></td>
+                            <td class="fw-semibold">$@r.TotalPrice.ToString("N0")</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button class="icon-btn" title="Details" @onclick='() => Navigation.NavigateTo($"/reservations/details/{r.Id}")'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M12 12l3 2"></path><path d="M12 7v5"></path></svg>
+                                    </button>
+                                    <button class="icon-btn" title="Confirm" @onclick='() => Confirm(r.Id)'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5l10 -10"></path></svg>
+                                    </button>
+                                    <button class="icon-btn danger" title="Cancel" @onclick='() => Cancel(r.Id)'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-list d-block d-md-none">
+                @foreach (var r in Paged)
+                {
+                    <div class="card-list-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">@r.Car</div>
+                                <div class="text-muted small">@r.Customer</div>
+                            </div>
+                            <span class="status-pill @GetStatusClass(r.Status)">@r.Status</span>
+                        </div>
+                        <div class="text-muted small">@FormatPeriod(r.StartDate, r.EndDate)</div>
+                        <div class="fw-semibold mt-1">$@r.TotalPrice.ToString("N0")</div>
+                        <div class="row-actions">
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/reservations/details/{r.Id}")'>Details</button>
+                            <button class="btn btn-outline-success btn-sm" @onclick='() => Confirm(r.Id)'>Confirm</button>
+                            <button class="btn btn-outline-danger btn-sm" @onclick='() => Cancel(r.Id)'>Cancel</button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="pagination">
+                @for (var p = 1; p <= TotalPages; p++)
+                {
+                    <button class="page-btn @(page == p ? "active" : string.Empty)" @onclick='() => ChangePage(p)'>@p</button>
+                }
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     private List<ReservationDetailDto>? reservations;
+    private string searchTerm = string.Empty;
+    private string? statusFilter;
+    private string sortOption = "start";
+    private int page = 1;
+    private const int PageSize = 8;
+    private bool isLoading = true;
+
+    private readonly List<string> statusChips = new() { "All", "Pending", "Confirmed", "Active", "Completed", "Cancelled" };
+
+    private IEnumerable<ReservationDetailDto> Filtered
+    {
+        get
+        {
+            var baseQuery = (reservations ?? Enumerable.Empty<ReservationDetailDto>())
+                .Where(r =>
+                    (string.IsNullOrWhiteSpace(searchTerm) ||
+                     r.Car.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                     r.Customer.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                     r.Status.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+                    (string.IsNullOrWhiteSpace(statusFilter) || statusFilter == "All" || r.Status.Equals(statusFilter, StringComparison.OrdinalIgnoreCase)));
+
+            return sortOption switch
+            {
+                "end" => baseQuery.OrderByDescending(r => r.EndDate),
+                "total" => baseQuery.OrderByDescending(r => r.TotalPrice),
+                _ => baseQuery.OrderByDescending(r => r.StartDate)
+            };
+        }
+    }
+
+    private IEnumerable<ReservationDetailDto> Paged => Filtered.Skip((page - 1) * PageSize).Take(PageSize);
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(Filtered.Count() / (double)PageSize));
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +172,31 @@ else
 
     private async Task Load()
     {
+        isLoading = true;
         reservations = await Api.GetReservationsAsync();
+        isLoading = false;
+    }
+
+    private void SetStatusFilter(string chip)
+    {
+        statusFilter = chip == "All" ? null : chip;
+        page = 1;
+    }
+
+    private string GetStatusClass(string status) => status.ToLowerInvariant() switch
+    {
+        "pending" => "status-pending",
+        "confirmed" => "status-confirmed",
+        "active" => "status-active",
+        "completed" => "status-completed",
+        "cancelled" => "status-cancelled",
+        _ => string.Empty
+    };
+
+    private string FormatPeriod(DateTime start, DateTime end)
+    {
+        var culture = CultureInfo.InvariantCulture;
+        return $"{start.ToString("MMM dd", culture)} - {end.ToString("MMM dd", culture)}";
     }
 
     private async Task Confirm(int id)
@@ -71,4 +210,6 @@ else
         await Api.CancelReservationAsync(id);
         await Load();
     }
+
+    private void ChangePage(int newPage) => page = newPage;
 }

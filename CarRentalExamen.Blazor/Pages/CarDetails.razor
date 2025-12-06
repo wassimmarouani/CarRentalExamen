@@ -1,94 +1,160 @@
 @page "/cars/details/{id:int}"
 @attribute [Authorize]
 @inject ApiClient Api
+@inject NavigationManager Navigation
 
 <PageTitle>Car Details</PageTitle>
 
-@if (car is null)
-{
-    <div class="card glassy p-4 text-center">
-        <div class="spinner-border text-primary" role="status"></div>
-        <div class="mt-2 text-muted">Loading car details...</div>
-    </div>
-}
-else
-{
-    <div class="car-details-grid">
-        <div class="car-hero glassy">
-            <div class="car-image-wrap">
-                <img src="@HeroImageUrl" alt="@($"{car.Make} {car.Model}")" class="car-image" onerror="this.src='/favicon.png';" />
-                <span class="status-chip @GetStatusClass(car.Status)">@car.Status</span>
-            </div>
-            <div class="car-meta">
-                <div class="eyebrow">Car profile</div>
-                <h2 class="mb-1">@car.Make @car.Model <span class="text-muted">(@car.Year)</span></h2>
-                <div class="meta-row">
-                    <div class="pill">Plate: @car.PlateNumber</div>
-                    <div class="pill">Mileage: @car.Mileage km</div>
-                    <div class="pill">Daily: @car.DailyPrice.ToString("C")</div>
+<div class="command-shell">
+    @if (isLoading)
+    {
+        <div class="card-compact">
+            <div class="skeleton" style="height:20px;width:60%;"></div>
+            <div class="skeleton" style="height:14px;width:40%;"></div>
+        </div>
+    }
+    else if (car is null)
+    {
+        <div class="alert alert-danger">Car not found.</div>
+    }
+    else
+    {
+        <div class="entity-hero entity-header">
+            <div>
+                <div class="eyebrow text-uppercase">Fleet control</div>
+                <h2 class="title mb-2">@car.Make @car.Model <span class="text-muted">(@car.Year)</span></h2>
+                <p class="dash-subtext mb-2">Operator access enabled. Full audit on vehicle profile, pricing, and bookings.</p>
+                <div class="entity-meta">
+                    <span class="meta-chip">Plate: @car.PlateNumber</span>
+                    <span class="meta-chip">Mileage: @car.Mileage:N0 km</span>
+                    <span class="meta-chip">Rate: @car.DailyPrice.ToString("C") / day</span>
                 </div>
             </div>
-        </div>
-
-        <div class="car-specs glassy">
-            <div class="spec">
-                <div class="label">Make</div>
-                <div class="value">@car.Make</div>
-            </div>
-            <div class="spec">
-                <div class="label">Model</div>
-                <div class="value">@car.Model</div>
-            </div>
-            <div class="spec">
-                <div class="label">Year</div>
-                <div class="value">@car.Year</div>
-            </div>
-            <div class="spec">
-                <div class="label">Plate</div>
-                <div class="value">@car.PlateNumber</div>
-            </div>
-            <div class="spec">
-                <div class="label">Status</div>
-                <div class="value"><span class="status-chip @GetStatusClass(car.Status)">@car.Status</span></div>
-            </div>
-            <div class="spec">
-                <div class="label">Daily Price</div>
-                <div class="value">@car.DailyPrice.ToString("C")</div>
-            </div>
-            <div class="spec">
-                <div class="label">Mileage</div>
-                <div class="value">@car.Mileage km</div>
-            </div>
-        </div>
-
-        <div class="car-reservations glassy">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <div class="eyebrow">Bookings</div>
-                    <h4 class="mb-0">Reservations</h4>
-                </div>
-                <a class="btn btn-sm btn-outline-primary" href="/reservations/create">New reservation</a>
-            </div>
-
-            @if (car.Reservations is null || !car.Reservations.Any())
-            {
-                <div class="empty-state text-muted">No reservations yet.</div>
-            }
-            else
-            {
-                <div class="res-list">
-                    @foreach (var res in car.Reservations.OrderByDescending(r => r.StartDate))
+            <div class="cta-stack">
+                <span class="role-chip"><span class="status-dot"></span> Operator Access</span>
+                <span class="status-pill @GetStatusClass(car.Status)">@car.Status</span>
+                <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit Car</button>
+                <div class="actions-dropdown">
+                    <button class="btn btn-outline-secondary" @onclick='() => ToggleMenu("car")'>Actions ▾</button>
+                    @if (activeMenu == "car")
                     {
-                        <div class="res-card">
-                            <div>
-                                <div class="fw-semibold">@res.Customer?.FirstName @res.Customer?.LastName</div>
-                                <div class="small text-muted">@res.StartDate:dd MMM yyyy — @res.EndDate:dd MMM yyyy</div>
-                            </div>
-                            <span class="status-chip @GetStatusClass(res.Status)">@res.Status</span>
+                        <div class="actions-dropdown-menu">
+                            <button @onclick="() => ChangeStatus(CarStatus.Maintenance)">Schedule Maintenance</button>
+                            <button @onclick="() => ChangeStatus(CarStatus.Available)">Mark Available</button>
+                            <button class="text-danger" @onclick="() => showDeleteConfirm = true">Delete</button>
                         </div>
                     }
                 </div>
-            }
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Availability</div>
+                    <div class="timeline">
+                        <div class="timeline-step"><span class="dot"></span><span>Now: @car.Status</span></div>
+                        <div class="timeline-step"><span class="dot"></span><span>Next: Maintenance window</span></div>
+                        <div class="timeline-step"><span class="dot"></span><span>Then: Available</span></div>
+                    </div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Specs</div>
+                    <div class="kpi-subtext">Make / Model / Year</div>
+                    <div class="fw-semibold">@car.Make @car.Model (@car.Year)</div>
+                    <div class="kpi-subtext">Plate</div>
+                    <div class="fw-semibold">@car.PlateNumber</div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Pricing</div>
+                    <div class="kpi-subtext">Daily</div>
+                    <div class="fw-semibold">@car.DailyPrice.ToString("C")</div>
+                    <div class="kpi-subtext">Weekly / Monthly</div>
+                    <div class="fw-semibold text-muted">Configure in pricing rules</div>
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="car-image-wrap mb-3">
+                        <img src="@HeroImageUrl" alt="@($"{car.Make} {car.Model}")" class="car-image" onerror="this.src='/favicon.png';" />
+                    </div>
+                    <div class="tab-bar">
+                        <button class="tab-btn @(activeTab == "reservations" ? "active" : string.Empty)" @onclick='() => activeTab = "reservations"'>Reservations</button>
+                        <button class="tab-btn @(activeTab == "maintenance" ? "active" : string.Empty)" @onclick='() => activeTab = "maintenance"'>Maintenance</button>
+                        <button class="tab-btn @(activeTab == "performance" ? "active" : string.Empty)" @onclick='() => activeTab = "performance"'>Performance</button>
+                    </div>
+                    @if (activeTab == "reservations")
+                    {
+                        if (car.Reservations is null || !car.Reservations.Any())
+                        {
+                            <div class="empty-state">No reservations yet.</div>
+                        }
+                        else
+                        {
+                            <div class="card-list">
+                                @foreach (var res in car.Reservations.OrderByDescending(r => r.StartDate))
+                                {
+                                    <div class="card-list-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-semibold">@res.Customer?.FirstName @res.Customer?.LastName</div>
+                                                <div class="text-muted small">@res.StartDate:dd MMM yyyy - @res.EndDate:dd MMM yyyy</div>
+                                            </div>
+                                            <span class="status-pill @GetStatusClass(res.Status)">@res.Status</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else if (activeTab == "maintenance")
+                    {
+                        <div class="empty-state">No maintenance logs yet.</div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">Performance metrics coming soon.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-col">
+                <div class="card-compact">
+                    <div class="fw-semibold">Quick actions</div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit</button>
+                        <button class="btn btn-outline-secondary" @onclick="() => ChangeStatus(CarStatus.Maintenance)">Schedule Maintenance</button>
+                        <button class="btn btn-outline-secondary" @onclick="() => ChangeStatus(CarStatus.Available)">Mark Available</button>
+                        <button class="btn btn-outline-danger" @onclick="() => showDeleteConfirm = true">Delete</button>
+                    </div>
+                    <div class="audit-hint mt-3">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path></svg>
+                        Operator actions are logged.
+                    </div>
+                </div>
+                <div class="card-compact">
+                    <div class="fw-semibold">Audit log</div>
+                    <div class="audit-log">
+                        <div class="audit-item">Status checked · now</div>
+                        <div class="audit-item">Profile loaded · now</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (showDeleteConfirm && car is not null)
+{
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm deletion</h5>
+            <p class="mb-3">Operator action required. Delete <strong>@car.Make @car.Model (@car.PlateNumber)</strong>?</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick="() => showDeleteConfirm = false">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteCar">Delete</button>
+            </div>
         </div>
     </div>
 }
@@ -96,11 +162,22 @@ else
 @code {
     [Parameter] public int id { get; set; }
     private Car? car;
-    private string HeroImageUrl => string.IsNullOrWhiteSpace(car?.ImageUrl) ? "/favicon.png" : car.ImageUrl!;
+    private bool isLoading = true;
+    private string HeroImageUrl => BuildImageUrl(car?.ImageUrl);
+    private string activeTab = "reservations";
+    private string? activeMenu;
+    private bool showDeleteConfirm;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCar();
+    }
+
+    private async Task LoadCar()
+    {
+        isLoading = true;
         car = await Api.GetCarAsync(id);
+        isLoading = false;
     }
 
     private string GetStatusClass(Enum status)
@@ -108,11 +185,41 @@ else
         var name = status.ToString().ToLowerInvariant();
         return name switch
         {
-            "available" => "chip-available",
-            "reserved" => "chip-reserved",
-            "active" => "chip-active",
-            "maintenance" => "chip-maintenance",
-            _ => "chip-muted"
+            "available" => "status-available",
+            "reserved" => "status-reserved",
+            "rented" => "status-rented",
+            "maintenance" => "status-maintenance",
+            _ => "status-pending"
         };
+    }
+
+    private string BuildImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/favicon.png";
+        }
+
+        return imageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? imageUrl
+            : Navigation.ToAbsoluteUri(imageUrl).ToString();
+    }
+
+    private void ToggleMenu(string key) => activeMenu = activeMenu == key ? null : key;
+
+    private async Task ChangeStatus(CarStatus status)
+    {
+        if (car is null) return;
+        await Api.UpdateCarStatusAsync(car.Id, status);
+        await LoadCar();
+        activeMenu = null;
+    }
+
+    private async Task DeleteCar()
+    {
+        if (car is null) return;
+        await Api.DeleteCarAsync(car.Id);
+        showDeleteConfirm = false;
+        Navigation.NavigateTo("/cars");
     }
 }

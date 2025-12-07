@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarRentalExamen.Blazor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+032248c674eaeac841c52a25a4af2df3a50f8272")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4ab2161121840a87be0d9759013d9d5835e7c89")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarRentalExamen.Blazor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarRentalExamen.Blazor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

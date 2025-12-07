@@ -10,9 +10,13 @@ public interface IReservationService
 {
     Task<IEnumerable<ReservationDetailDto>> GetAllAsync();
     Task<ReservationDetailDto?> GetByIdAsync(int id);
+    Task<IEnumerable<ReservationDetailDto>> GetByCustomerAsync(int customerId);
     Task<(bool Success, string? Error, ReservationDetailDto? Reservation)> CreateAsync(ReservationCreateDto dto);
+    Task<(bool Success, string? Error, ReservationDetailDto? Reservation)> CreateForCustomerAsync(ReservationCustomerCreateDto dto, int customerId);
+    Task<ReservationQuoteResponseDto> QuoteAsync(ReservationQuoteRequestDto request);
     Task<(bool Success, string? Error)> ConfirmAsync(int id);
     Task<(bool Success, string? Error)> CancelAsync(int id);
+    Task<(bool Success, string? Error)> CancelForCustomerAsync(int id, int customerId);
     Task<(bool Success, string? Error)> PickupAsync(int id, int? mileage, decimal? fuelLevel);
     Task<(bool Success, string? Error)> CompleteAsync(int id, CompleteReservationRequest request);
     Task<(bool Success, string? Error)> DeleteAsync(int id);

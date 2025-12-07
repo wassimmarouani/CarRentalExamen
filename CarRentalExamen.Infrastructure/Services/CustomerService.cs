@@ -29,6 +29,11 @@ public class CustomerService : ICustomerService
         return await _context.Customers.FindAsync(id);
     }
 
+    public async Task<Customer?> GetByUserIdAsync(int userId)
+    {
+        return await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+    }
+
     public async Task<Customer> CreateAsync(CustomerCreateUpdateDto dto)
     {
         var customer = new Customer

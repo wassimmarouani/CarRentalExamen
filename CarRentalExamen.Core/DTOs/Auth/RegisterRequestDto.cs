@@ -17,5 +17,5 @@ public class RegisterRequestDto
     [EmailAddress(ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = string.Empty;
 
-    public UserRole Role { get; set; } = UserRole.Agent;
+    public UserRole Role { get; set; } = UserRole.Customer;
 }

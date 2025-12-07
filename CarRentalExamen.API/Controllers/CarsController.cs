@@ -30,6 +30,14 @@ public class CarsController : ControllerBase
         return Ok(cars);
     }
 
+    [HttpPost("search")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<Car>>> Search([FromBody] CarSearchRequestDto request)
+    {
+        var cars = await _carService.SearchAsync(request);
+        return Ok(cars);
+    }
+
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     public async Task<ActionResult<Car>> GetById(int id)

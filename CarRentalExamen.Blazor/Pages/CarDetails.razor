@@ -1,5 +1,5 @@
-@page "/cars/details/{id:int}"
-@attribute [Authorize]
+@page "/admin/cars/{id:int}"
+@attribute [Authorize(Roles = "Admin")]
 @inject ApiClient Api
 @inject NavigationManager Navigation
 

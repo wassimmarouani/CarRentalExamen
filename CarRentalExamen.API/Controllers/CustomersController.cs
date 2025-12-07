@@ -3,6 +3,7 @@ using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CarRentalExamen.API.Controllers;
 
@@ -26,6 +27,17 @@ public class CustomersController : ControllerBase
     {
         var customers = await _customerService.GetAllAsync();
         return Ok(customers);
+    }
+
+    [HttpGet("me")]
+    [Authorize(Roles = "Customer")]
+    public async Task<ActionResult<Customer>> GetMe()
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var customer = await _customerService.GetByUserIdAsync(userId);
+        if (customer is null) return NotFound();
+        return Ok(customer);
     }
 
     [HttpGet("{id:int}")]
@@ -54,6 +66,23 @@ public class CustomersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("me")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> UpdateMe([FromBody] CustomerCreateUpdateDto dto)
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var customer = await _customerService.GetByUserIdAsync(userId);
+        if (customer is null) return NotFound();
+
+        var (success, error) = await _customerService.UpdateAsync(customer.Id, dto);
+        if (!success)
+        {
+            return BadRequest(error);
+        }
+        return NoContent();
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -73,5 +102,25 @@ public class CustomersController : ControllerBase
 
         var reservations = await _customerService.GetReservationsAsync(id);
         return Ok(reservations);
+    }
+
+    [HttpGet("me/reservations")]
+    [Authorize(Roles = "Customer")]
+    public async Task<ActionResult<IEnumerable<Reservation>>> GetMyReservations()
+    {
+        if (!TryGetUserId(out var userId)) return Unauthorized();
+
+        var customer = await _customerService.GetByUserIdAsync(userId);
+        if (customer is null) return NotFound();
+
+        var reservations = await _customerService.GetReservationsAsync(customer.Id);
+        return Ok(reservations);
+    }
+
+    private bool TryGetUserId(out int userId)
+    {
+        userId = 0;
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(userIdClaim, out userId);
     }
 }

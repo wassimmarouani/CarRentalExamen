@@ -27,6 +27,18 @@ public class ReservationsController : ControllerBase
         return Ok(reservations);
     }
 
+    [HttpPost("quote")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ReservationQuoteResponseDto>> Quote([FromBody] ReservationQuoteRequestDto request)
+    {
+        var quote = await _reservationService.QuoteAsync(request);
+        if (!quote.IsAvailable)
+        {
+            return Conflict(quote);
+        }
+        return Ok(quote);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ReservationDetailDto>> GetById(int id)
     {

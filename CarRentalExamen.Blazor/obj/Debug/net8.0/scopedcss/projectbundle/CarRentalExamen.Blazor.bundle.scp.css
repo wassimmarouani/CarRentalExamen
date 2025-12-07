@@ -874,6 +874,312 @@
         grid-column: 1;
     }
 }
+/* /Pages/CustomerHome.razor.rz.scp.css */
+.customer-hero[b-6s567y6hiq] {
+    position: relative;
+    background: linear-gradient(180deg, rgba(16, 28, 62, 0.6), rgba(16, 28, 62, 0.15)), url('/images/hero/customer-hero.jpg') center/cover no-repeat;
+    color: #fff;
+    min-height: 70vh;
+}
+
+.hero-overlay[b-6s567y6hiq] {
+    backdrop-filter: blur(2px);
+    padding: 2.5rem 4rem 5rem;
+}
+
+.brand-bar[b-6s567y6hiq] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.brand-mark[b-6s567y6hiq] {
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+}
+
+.brand-sub[b-6s567y6hiq] {
+    opacity: 0.85;
+    flex: 1;
+}
+
+.brand-actions[b-6s567y6hiq] {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ghost-btn[b-6s567y6hiq] {
+    border: 1px solid rgba(255,255,255,0.4);
+    background: transparent;
+    color: #fff;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
+
+.accent-btn[b-6s567y6hiq] {
+    background: #41007a;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 700;
+}
+
+.hero-copy[b-6s567y6hiq] {
+    margin-top: 3rem;
+    max-width: 560px;
+}
+
+.hero-copy h1[b-6s567y6hiq] {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.hero-copy p[b-6s567y6hiq] {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.search-panel[b-6s567y6hiq] {
+    margin-top: 2.5rem;
+    background: #fff;
+    border-radius: 22px;
+    padding: 1.25rem;
+    color: #111;
+}
+
+.vehicle-tabs[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.vehicle-tabs .tab[b-6s567y6hiq] {
+    border: none;
+    background: #f5f5f8;
+    padding: 0.6rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+}
+
+.vehicle-tabs .active[b-6s567y6hiq] {
+    border: 2px solid #ff4b2b;
+    background: #fff6f3;
+    color: #ff4b2b;
+}
+
+.search-grid[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.form-group label[b-6s567y6hiq] {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+}
+
+.form-control[b-6s567y6hiq] {
+    border-radius: 12px;
+    border: 1px solid #d7d9e0;
+    padding: 0.65rem 0.75rem;
+}
+
+.submit-group[b-6s567y6hiq] {
+    display: flex;
+    align-items: flex-end;
+}
+
+.primary-btn[b-6s567y6hiq] {
+    background: #ea4016;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    font-weight: 700;
+}
+
+.secondary-btn[b-6s567y6hiq] {
+    background: #fff;
+    border: 1px solid #d7d9e0;
+    border-radius: 10px;
+    padding: 0.55rem 0.9rem;
+    font-weight: 600;
+}
+
+.search-footer[b-6s567y6hiq] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    border-top: 1px solid #f1f1f1;
+    padding-top: 0.75rem;
+}
+
+.footer-actions[b-6s567y6hiq] {
+    display: flex;
+    gap: 1rem;
+}
+
+.link-btn[b-6s567y6hiq] {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-weight: 600;
+}
+
+.section-wrap[b-6s567y6hiq] {
+    padding: 3rem 4rem;
+}
+
+.bg-soft[b-6s567y6hiq] {
+    background: #f2f5fb;
+}
+
+.section-header[b-6s567y6hiq] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.section-header h2[b-6s567y6hiq] {
+    font-weight: 800;
+}
+
+.cards-row[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.category-card[b-6s567y6hiq] {
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.category-img[b-6s567y6hiq] {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.category-body[b-6s567y6hiq] {
+    padding: 0.85rem 1rem 1.1rem;
+}
+
+.category-title[b-6s567y6hiq] {
+    font-weight: 800;
+    margin-bottom: 0.4rem;
+}
+
+.category-meta span[b-6s567y6hiq] {
+    display: inline-block;
+    background: #eef1f6;
+    padding: 0.35rem 0.6rem;
+    border-radius: 10px;
+    margin-right: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.tiles-row[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.tile[b-6s567y6hiq] {
+    text-align: center;
+    background: #f6f8fc;
+    border-radius: 16px;
+    padding: 1rem;
+    border: 1px solid #e3e6ef;
+}
+
+.tile img[b-6s567y6hiq] {
+    width: 120px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+
+.tile-title[b-6s567y6hiq] {
+    font-weight: 700;
+}
+
+.tile-sub[b-6s567y6hiq] {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.brand-grid[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+}
+
+.brand-cell[b-6s567y6hiq] {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0.75rem;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    font-weight: 700;
+}
+
+.results-grid[b-6s567y6hiq] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.result-card[b-6s567y6hiq] {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1rem;
+    border: 1px solid #eceff5;
+}
+
+.result-header[b-6s567y6hiq] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.result-title[b-6s567y6hiq] {
+    font-weight: 800;
+}
+
+.result-price[b-6s567y6hiq] {
+    color: #e63c0f;
+    font-weight: 800;
+}
+
+.result-meta span[b-6s567y6hiq] {
+    margin-right: 0.75rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.result-actions[b-6s567y6hiq] {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.shadow[b-6s567y6hiq], .shadow-sm[b-6s567y6hiq] {
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+}
 /* /Pages/Index.razor.rz.scp.css */
 .dashboard[b-zdkf3vo32n] {
     display: flex;

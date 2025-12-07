@@ -3,7 +3,9 @@ namespace CarRentalExamen.Core.DTOs.Reservations;
 public class ReservationDetailDto
 {
     public int Id { get; set; }
+    public int CarId { get; set; }
     public string Car { get; set; } = string.Empty;
+    public int CustomerId { get; set; }
     public string Customer { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

@@ -99,6 +99,38 @@ public class ApiClient
         }
     }
 
+    public async Task<(AuthResponseDto? Result, string? Error)> RegisterCustomerAsync(RegisterCustomerRequestDto dto)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/auth/register-customer", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    return (null, errorContent.Contains("email", StringComparison.OrdinalIgnoreCase)
+                        ? "Email already exists."
+                        : "Username already exists.");
+                }
+                return (null, string.IsNullOrEmpty(errorContent) ? "Registration failed." : errorContent);
+            }
+
+            var auth = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+            if (auth is not null)
+            {
+                await _tokenStorage.SetTokenAsync(auth.Token, true);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+                _authStateProvider?.NotifyAuthenticationStateChanged();
+            }
+            return (auth, null);
+        }
+        catch (Exception ex)
+        {
+            return (null, $"Connection error: {ex.Message}");
+        }
+    }
+
     public async Task LogoutAsync()
     {
         await _tokenStorage.ClearAsync();
@@ -202,6 +234,47 @@ public class ApiClient
         return response.IsSuccessStatusCode;
     }
 
+    public async Task<(ReservationQuoteResponseDto? Quote, string? Error)> GetReservationQuoteAsync(ReservationQuoteRequestDto dto)
+    {
+        try
+        {
+            await EnsureAuthHeaderAsync();
+            var response = await _httpClient.PostAsJsonAsync("api/reservations/quote", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                return (null, string.IsNullOrWhiteSpace(err) ? "Failed to load quote." : err);
+            }
+
+            var quote = await response.Content.ReadFromJsonAsync<ReservationQuoteResponseDto>();
+            return (quote, null);
+        }
+        catch (Exception ex)
+        {
+            return (null, $"Failed to load quote: {ex.Message}");
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> CreateMyReservationAsync(ReservationCustomerCreateDto dto)
+    {
+        try
+        {
+            await EnsureAuthHeaderAsync();
+            var response = await _httpClient.PostAsJsonAsync("api/my/reservations", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+
+            var err = await response.Content.ReadAsStringAsync();
+            return (false, string.IsNullOrWhiteSpace(err) ? "Could not create reservation." : err);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Could not create reservation: {ex.Message}");
+        }
+    }
+
     public async Task<bool> ConfirmReservationAsync(int id)
     {
         await EnsureAuthHeaderAsync();
@@ -259,6 +332,19 @@ public class ApiClient
     {
         await EnsureAuthHeaderAsync();
         return await _httpClient.GetFromJsonAsync<DashboardStats>("api/dashboard/stats");
+    }
+
+    public async Task<List<ReservationDetailDto>> GetMyReservationsAsync()
+    {
+        await EnsureAuthHeaderAsync();
+        return await _httpClient.GetFromJsonAsync<List<ReservationDetailDto>>("api/my/reservations") ?? new List<ReservationDetailDto>();
+    }
+
+    public async Task<bool> CancelMyReservationAsync(int id)
+    {
+        await EnsureAuthHeaderAsync();
+        var response = await _httpClient.PutAsync($"api/my/reservations/{id}/cancel", null);
+        return response.IsSuccessStatusCode;
     }
 
     public async Task<string?> GetCurrentTokenAsync() => await _tokenStorage.GetTokenAsync();

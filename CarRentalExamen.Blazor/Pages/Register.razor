@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 @using System.Linq
+@using CarRentalExamen.Core.DTOs.Auth
 
 <PageTitle>Register - Velocity Fleet</PageTitle>
 
@@ -20,8 +21,8 @@
             </div>
             <div>
                 <div class="eyebrow text-soft">Velocity Fleet</div>
-                <div class="brand-title">Car Rental Command</div>
-                <div class="small text-soft">New operator setup</div>
+                <div class="brand-title">Car Rental</div>
+                <div class="small text-soft">Customer registration</div>
             </div>
             <span class="badge-secure ms-auto">
                 <span class="status-dot"></span>
@@ -31,11 +32,11 @@
 
         <div class="pill mb-3">
             <span class="pulse-dot pulse-dot-accent"></span>
-            New Operator Setup
+            New Customer Setup
         </div>
 
-        <h2>Join the fleet command</h2>
-        <p class="mb-4">Create your operator credentials to unlock full control of vehicles, bookings, customers, and analytics.</p>
+        <h2>Join Velocity Fleet</h2>
+        <p class="mb-4">Create your account to browse our fleet, make reservations, and manage your rentals.</p>
 
         <div class="auth-bullets">
             <div class="auth-bullet">
@@ -47,20 +48,8 @@
                     </svg>
                 </span>
                 <div>
-                    <div class="fw-semibold">Vehicle Management</div>
-                    <div class="small">Authorize inventory updates, availability, and maintenance status.</div>
-                </div>
-            </div>
-            <div class="auth-bullet">
-                <span class="bullet-dot">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                    </svg>
-                </span>
-                <div>
-                    <div class="fw-semibold">Customer Database</div>
-                    <div class="small">Manage customer history, billing preferences, and risk indicators.</div>
+                    <div class="fw-semibold">Browse Vehicles</div>
+                    <div class="small">Explore our wide selection of cars available for rent.</div>
                 </div>
             </div>
             <div class="auth-bullet">
@@ -74,8 +63,20 @@
                     </svg>
                 </span>
                 <div>
-                    <div class="fw-semibold">Booking System</div>
-                    <div class="small">Control reservations, returns, and scheduling with operator privileges.</div>
+                    <div class="fw-semibold">Easy Reservations</div>
+                    <div class="small">Book your next ride in just a few clicks.</div>
+                </div>
+            </div>
+            <div class="auth-bullet">
+                <span class="bullet-dot">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                    </svg>
+                </span>
+                <div>
+                    <div class="fw-semibold">Manage Your Rentals</div>
+                    <div class="small">View and track all your reservations in one place.</div>
                 </div>
             </div>
         </div>
@@ -93,7 +94,7 @@
                     <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
                     <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"></path>
                 </svg>
-                Full Access
+                Wide Selection
             </div>
             <div class="stat-chip">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,7 +104,7 @@
                     <path d="M11.5 3a17 17 0 0 0 0 18"></path>
                     <path d="M12.5 3a17 17 0 0 1 0 18"></path>
                 </svg>
-                Cloud Sync
+                24/7 Support
             </div>
         </div>
     </div>
@@ -113,11 +114,11 @@
             <div class="auth-card-title">
                 <div class="authority-chip">
                     <span class="status-dot"></span>
-                    Operator Access Enabled
+                    Customer Registration
                 </div>
                 <div class="eyebrow mt-2">Registration</div>
                 <h4>Create your account</h4>
-                <p class="auth-subtext">Set up your operator credentials to get started.</p>
+                <p class="auth-subtext">Set up your customer profile to start renting.</p>
             </div>
             <div class="auth-nav">
                 <span class="auth-nav-text">Already registered?</span>
@@ -132,7 +133,7 @@
                     <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                     <path d="M9 12l2 2l4 -4"></path>
                 </svg>
-                Operator profile created. Redirecting to dashboard...
+                Account created. Redirecting to browse cars...
             </div>
         }
 
@@ -149,6 +150,37 @@
                     @error
                 </div>
             }
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="reg-firstname">First Name</label>
+                    <div class="input-shell @GetInputState(registerModel, nameof(registerModel.FirstName))">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                            </svg>
+                        </span>
+                        <InputText id="reg-firstname" class="form-control" @bind-Value="registerModel.FirstName"
+                                   autocomplete="given-name" placeholder="First name" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.FirstName)" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="reg-lastname">Last Name</label>
+                    <div class="input-shell @GetInputState(registerModel, nameof(registerModel.LastName))">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                            </svg>
+                        </span>
+                        <InputText id="reg-lastname" class="form-control" @bind-Value="registerModel.LastName"
+                                   autocomplete="family-name" placeholder="Last name" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.LastName)" />
+                </div>
+            </div>
 
             <div class="mb-3">
                 <label class="form-label" for="reg-username">Username</label>
@@ -182,9 +214,56 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label" for="reg-phone">Phone Number</label>
+                <div class="input-shell @GetInputState(registerModel, nameof(registerModel.Phone))">
+                    <span class="input-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"></path>
+                        </svg>
+                    </span>
+                    <InputText id="reg-phone" class="form-control" @bind-Value="registerModel.Phone"
+                               autocomplete="tel" placeholder="Phone number" aria-required="true" />
+                </div>
+                <ValidationMessage For="@(() => registerModel.Phone)" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="reg-cin">ID / Passport Number</label>
+                    <div class="input-shell @GetInputState(registerModel, nameof(registerModel.CinOrPassport))">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+                                <path d="M9 12h6"></path>
+                                <path d="M9 16h6"></path>
+                            </svg>
+                        </span>
+                        <InputText id="reg-cin" class="form-control" @bind-Value="registerModel.CinOrPassport"
+                                   placeholder="ID or Passport number" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.CinOrPassport)" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="reg-license">Driver's License</label>
+                    <div class="input-shell @GetInputState(registerModel, nameof(registerModel.LicenseNumber))">
+                        <span class="input-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+                                <path d="M7 12h.01"></path>
+                                <path d="M11 12h6"></path>
+                            </svg>
+                        </span>
+                        <InputText id="reg-license" class="form-control" @bind-Value="registerModel.LicenseNumber"
+                                   placeholder="License number" aria-required="true" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.LicenseNumber)" />
+                </div>
+            </div>
+
+            <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <label class="form-label" for="reg-password">Password</label>
-                    <span class="input-hint">Require strong operator keys</span>
+                    <span class="input-hint">Strong password recommended</span>
                 </div>
                 <div class="input-shell @GetInputState(registerModel, nameof(registerModel.Password))">
                     <span class="input-icon">
@@ -297,13 +376,13 @@
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
             </svg>
-            <span>Your operator account provisions instantly. Full control applies immediately.</span>
+            <span>Your account is created instantly. Start browsing and reserving cars right away.</span>
         </div>
     </div>
 </div>
 
 @code {
-    private RegisterRequestDto registerModel = new();
+    private RegisterCustomerRequestDto registerModel = new();
     private EditContext? registerEditContext;
     private string confirmPassword = string.Empty;
     private string? error;
@@ -328,7 +407,7 @@
         var existingToken = await Api.GetCurrentTokenAsync();
         if (!string.IsNullOrWhiteSpace(existingToken))
         {
-            Navigation.NavigateTo("/dashboard", true);
+            Navigation.NavigateTo("/customer", true);
         }
     }
 
@@ -442,7 +521,7 @@
 
         isLoading = true;
 
-        var (result, errorMessage) = await Api.RegisterAsync(registerModel);
+        var (result, errorMessage) = await Api.RegisterCustomerAsync(registerModel);
 
         isLoading = false;
 
@@ -454,7 +533,7 @@
 
         showSuccessToast = true;
 
-        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
+        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/customer" : returnUrl!;
         await Task.Delay(900);
         Navigation.NavigateTo(target, true);
     }

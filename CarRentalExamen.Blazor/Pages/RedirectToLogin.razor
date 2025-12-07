@@ -1,20 +1,48 @@
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
 
 <div class="d-flex align-items-center justify-content-center min-vh-100 text-muted">
     <div class="spinner-border text-primary me-3" role="status"></div>
-    <span>Sending you to the login page...</span>
-    @* Kept minimal to avoid layout flashes while redirecting. *@
+    <span>@message</span>
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        var path = string.IsNullOrWhiteSpace(relative) ? string.Empty : $"/{relative}";
-        var returnUrl = string.IsNullOrWhiteSpace(path)
-            ? "login"
-            : $"login?returnUrl={Uri.EscapeDataString(path)}";
+    private string message = "Redirecting...";
 
-        Navigation.NavigateTo(returnUrl, true);
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+        if (isAuthenticated)
+        {
+            // User is authenticated but not authorized for this page (wrong role)
+            var role = authState.User.FindFirst(ClaimTypes.Role)?.Value
+                ?? authState.User.FindFirst("role")?.Value;
+
+            if (string.Equals(role, "Customer", StringComparison.OrdinalIgnoreCase))
+            {
+                message = "Redirecting to customer home...";
+                Navigation.NavigateTo("/customer", true);
+            }
+            else
+            {
+                message = "Redirecting to dashboard...";
+                Navigation.NavigateTo("/dashboard", true);
+            }
+        }
+        else
+        {
+            // User is not authenticated - redirect to login
+            message = "Sending you to the login page...";
+            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+            var path = string.IsNullOrWhiteSpace(relative) ? string.Empty : $"/{relative}";
+            var returnUrl = string.IsNullOrWhiteSpace(path)
+                ? "login"
+                : $"login?returnUrl={Uri.EscapeDataString(path)}";
+
+            Navigation.NavigateTo(returnUrl, true);
+        }
     }
 }

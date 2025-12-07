@@ -3,8 +3,10 @@
 @layout AuthLayout
 @inject ApiClient Api
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
 @implements IDisposable
 @using System.Linq
+@using System.Security.Claims
 
 <PageTitle>Login - Velocity Fleet</PageTitle>
 
@@ -246,7 +248,13 @@
         var existingToken = await Api.GetCurrentTokenAsync();
         if (!string.IsNullOrWhiteSpace(existingToken))
         {
-            Navigation.NavigateTo("/dashboard", true);
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var role = authState.User.FindFirst(ClaimTypes.Role)?.Value
+                ?? authState.User.FindFirst("role")?.Value;
+            var target = string.Equals(role, "Customer", StringComparison.OrdinalIgnoreCase)
+                ? "/customer"
+                : "/dashboard";
+            Navigation.NavigateTo(target, true);
         }
     }
 
@@ -321,7 +329,9 @@
             return;
         }
 
-        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl!;
+        var target = string.IsNullOrWhiteSpace(returnUrl)
+            ? (string.Equals(result.Role, "Customer", StringComparison.OrdinalIgnoreCase) ? "/customer" : "/dashboard")
+            : returnUrl!;
         Navigation.NavigateTo(target, true);
     }
 

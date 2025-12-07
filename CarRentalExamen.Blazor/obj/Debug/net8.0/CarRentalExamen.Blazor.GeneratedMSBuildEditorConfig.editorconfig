@@ -38,6 +38,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2Fycy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/CustomerCarDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3VzdG9tZXJDYXJEZXRhaWxzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/CustomerDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3VzdG9tZXJEZXRhaWxzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -50,8 +54,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3VzdG9tZXJzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/MyReservations.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTXlSZXNlcnZhdGlvbnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/NotFound.razor]
@@ -78,6 +90,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVzZXJ2YXRpb25zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/ReserveCar.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVzZXJ2ZUNhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -97,6 +113,10 @@ build_metadata.AdditionalFiles.CssScope = b-uz1hj8jgbh
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/CarDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2FyRGV0YWlscy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-i2q07a5vmo
+
+[C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/CustomerHome.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3VzdG9tZXJIb21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-6s567y6hiq
 
 [C:/Users/MSI/Desktop/dotnet/CarRentalExamen/CarRentalExamen.Blazor/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=

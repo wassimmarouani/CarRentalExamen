@@ -1,0 +1,29 @@
+@page "/"
+@attribute [Authorize]
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+
+<div class="d-flex align-items-center justify-content-center min-vh-100 text-muted">
+    <div class="spinner-border text-primary me-3" role="status"></div>
+    <span>Loading...</span>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var role = authState.User.FindFirst(ClaimTypes.Role)?.Value
+            ?? authState.User.FindFirst("role")?.Value;
+
+        if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            Navigation.NavigateTo("/dashboard", true);
+        }
+        else
+        {
+            // Default to customer home for customers or unknown roles
+            Navigation.NavigateTo("/customer", true);
+        }
+    }
+}

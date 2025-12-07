@@ -1,6 +1,5 @@
-@page "/"
 @page "/dashboard"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @inject ApiClient Api
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation

@@ -1,6 +1,6 @@
 @page "/customers/edit"
 @page "/customers/edit/{id:int}"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @inject ApiClient Api
 @inject NavigationManager Navigation
 

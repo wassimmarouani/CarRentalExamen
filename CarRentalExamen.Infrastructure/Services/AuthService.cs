@@ -2,6 +2,7 @@ using CarRentalExamen.Core.DTOs.Auth;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
+using CarRentalExamen.Core.Enums;
 using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,8 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user));
+        var customerId = await GetCustomerIdAsync(user.Id);
+        return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user), customerId);
     }
 
     public async Task<AuthResponseDto?> RegisterAsync(RegisterRequestDto request)
@@ -47,7 +49,36 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user));
+        return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user), null);
+    }
+
+    public async Task<AuthResponseDto?> RegisterCustomerAsync(RegisterCustomerRequestDto request)
+    {
+        var user = new User
+        {
+            Username = request.Username,
+            PasswordHash = _passwordHasher.Hash(request.Password),
+            Email = request.Email,
+            Role = UserRole.Customer
+        };
+
+        var customer = new Customer
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            CinOrPassport = request.CinOrPassport,
+            LicenseNumber = request.LicenseNumber,
+            Phone = request.Phone,
+            Email = request.Email,
+            User = user
+        };
+
+        _context.Users.Add(user);
+        _context.Customers.Add(customer);
+        await _context.SaveChangesAsync();
+
+        var customerId = customer.Id;
+        return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user), customerId);
     }
 
     public async Task<AuthResponseDto?> GetUserByIdAsync(int userId)
@@ -55,7 +86,8 @@ public class AuthService : IAuthService
         var user = await _context.Users.FindAsync(userId);
         if (user is null) return null;
 
-        return CreateAuthResponse(user, string.Empty);
+        var customerId = await GetCustomerIdAsync(user.Id);
+        return CreateAuthResponse(user, string.Empty, customerId);
     }
 
     public async Task<bool> UsernameExistsAsync(string username)
@@ -73,15 +105,24 @@ public class AuthService : IAuthService
         return await _context.Users.AnyAsync();
     }
 
-    private static AuthResponseDto CreateAuthResponse(User user, string token)
+    private AuthResponseDto CreateAuthResponse(User user, string token, int? customerId)
     {
         return new AuthResponseDto
         {
             Token = token,
             UserId = user.Id,
+            CustomerId = customerId,
             Username = user.Username,
             Role = user.Role.ToString(),
             Email = user.Email
         };
+    }
+
+    private async Task<int?> GetCustomerIdAsync(int userId)
+    {
+        return await _context.Customers
+            .Where(c => c.UserId == userId)
+            .Select(c => (int?)c.Id)
+            .FirstOrDefaultAsync();
     }
 }

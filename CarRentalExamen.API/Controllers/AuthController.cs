@@ -49,6 +49,24 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("register-customer")]
+    [AllowAnonymous]
+    public async Task<ActionResult<AuthResponseDto>> RegisterCustomer([FromBody] RegisterCustomerRequestDto request)
+    {
+        if (await _authService.UsernameExistsAsync(request.Username))
+        {
+            return Conflict("Username already exists.");
+        }
+
+        if (await _authService.EmailExistsAsync(request.Email))
+        {
+            return Conflict("Email already exists.");
+        }
+
+        var result = await _authService.RegisterCustomerAsync(request);
+        return Ok(result);
+    }
+
     [HttpGet("me")]
     [Authorize]
     public async Task<ActionResult<AuthResponseDto>> GetCurrentUser()

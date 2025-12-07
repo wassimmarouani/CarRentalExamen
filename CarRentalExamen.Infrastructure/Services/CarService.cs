@@ -42,6 +42,46 @@ public class CarService : ICarService
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
+    public async Task<IEnumerable<Car>> SearchAsync(CarSearchRequestDto request)
+    {
+        var query = _context.Cars.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(request.Make))
+        {
+            query = query.Where(c => c.Make.Contains(request.Make));
+        }
+        if (!string.IsNullOrWhiteSpace(request.Model))
+        {
+            query = query.Where(c => c.Model.Contains(request.Model));
+        }
+        if (request.MinYear.HasValue)
+        {
+            query = query.Where(c => c.Year >= request.MinYear.Value);
+        }
+        if (request.MaxYear.HasValue)
+        {
+            query = query.Where(c => c.Year <= request.MaxYear.Value);
+        }
+        if (request.MinDailyPrice.HasValue)
+        {
+            query = query.Where(c => c.DailyPrice >= request.MinDailyPrice.Value);
+        }
+        if (request.MaxDailyPrice.HasValue)
+        {
+            query = query.Where(c => c.DailyPrice <= request.MaxDailyPrice.Value);
+        }
+        if (request.MaxMileage.HasValue)
+        {
+            query = query.Where(c => c.Mileage <= request.MaxMileage.Value);
+        }
+        if (request.Status.HasValue)
+        {
+            query = query.Where(c => c.Status == request.Status.Value);
+        }
+
+        return await query.AsNoTracking().ToListAsync();
+    }
+
     public async Task<(bool Success, string? Error, Car? Car)> CreateAsync(CarCreateUpdateDto dto)
     {
         if (await PlateNumberExistsAsync(dto.PlateNumber))

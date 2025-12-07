@@ -86,6 +86,16 @@ public class AppDbContext : DbContext
             .WithMany(c => c.Reservations)
             .HasForeignKey(r => r.CustomerId);
 
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.UserId)
+            .IsUnique();
+
         modelBuilder.Entity<ReservationOption>()
             .HasOne(o => o.Reservation)
             .WithMany(r => r.Options)

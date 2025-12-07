@@ -123,7 +123,14 @@ namespace CarRentalExamen.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Customers");
 
@@ -347,6 +354,16 @@ namespace CarRentalExamen.Infrastructure.Migrations
                             Role = 0,
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("CarRentalExamen.Core.Entities.Customer", b =>
+                {
+                    b.HasOne("CarRentalExamen.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CarRentalExamen.Core.Entities.Payment", b =>

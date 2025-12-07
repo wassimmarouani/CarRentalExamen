@@ -1,0 +1,176 @@
+@page "/my/reservations"
+@attribute [Authorize(Roles = "Customer")]
+@inject ApiClient Api
+@inject NavigationManager Navigation
+@using System.Globalization
+
+<PageTitle>My Reservations</PageTitle>
+
+<div class="command-shell">
+    <div class="page-head">
+        <div>
+            <div class="eyebrow text-uppercase">My Account</div>
+            <h2 class="title mb-2">My Reservations</h2>
+            <p class="text-muted mb-0">View and manage your car rental reservations.</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/customer"))'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                    <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                    <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5"></path>
+                </svg>
+                Browse More Cars
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    else if (reservations.Count == 0)
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted">
+                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"></path>
+                    <path d="M16 3v4"></path>
+                    <path d="M8 3v4"></path>
+                    <path d="M4 11h16"></path>
+                </svg>
+            </div>
+            <h5>No Reservations Yet</h5>
+            <p class="text-muted">You haven't made any reservations. Browse our cars and book your first ride!</p>
+            <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/customer"))'>
+                Browse Cars
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Reservation #</th>
+                        <th>Car</th>
+                        <th>Dates</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var res in reservations)
+                    {
+                        <tr>
+                            <td><strong>#@res.Id</strong></td>
+                            <td>@res.Car</td>
+                            <td>
+                                <small>
+                                    @res.StartDate.ToString("MMM dd, yyyy") - @res.EndDate.ToString("MMM dd, yyyy")
+                                </small>
+                            </td>
+                            <td>@res.TotalPrice.ToString("C", CultureInfo.GetCultureInfo("en-US"))</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(res.Status)">
+                                    @res.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (CanCancel(res.Status))
+                                {
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="@(() => CancelReservation(res.Id))" disabled="@isCancelling">
+                                        @if (isCancelling && cancellingId == res.Id)
+                                        {
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        }
+                                        else
+                                        {
+                                            <span>Cancel</span>
+                                        }
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ReservationDetailDto> reservations = new();
+    private bool isLoading = true;
+    private bool isCancelling = false;
+    private int cancellingId = 0;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReservations();
+    }
+
+    private async Task LoadReservations()
+    {
+        try
+        {
+            isLoading = true;
+            reservations = await Api.GetMyReservationsAsync();
+            reservations = reservations.OrderByDescending(r => r.StartDate).ToList();
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to load reservations: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CancelReservation(int id)
+    {
+        isCancelling = true;
+        cancellingId = id;
+
+        var success = await Api.CancelMyReservationAsync(id);
+        if (success)
+        {
+            await LoadReservations();
+        }
+        else
+        {
+            error = "Failed to cancel reservation. It may have already been processed.";
+        }
+
+        isCancelling = false;
+        cancellingId = 0;
+    }
+
+    private bool CanCancel(string status)
+    {
+        return status.Equals("Pending", StringComparison.OrdinalIgnoreCase) ||
+               status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetStatusBadgeClass(string status) => status.ToLower() switch
+    {
+        "pending" => "bg-warning text-dark",
+        "confirmed" => "bg-info",
+        "pickedup" or "active" => "bg-primary",
+        "completed" or "returned" => "bg-success",
+        "cancelled" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+}

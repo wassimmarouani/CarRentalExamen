@@ -1,5 +1,5 @@
 @page "/customers"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @inject ApiClient Api
 @inject NavigationManager Navigation
 @using System.Linq

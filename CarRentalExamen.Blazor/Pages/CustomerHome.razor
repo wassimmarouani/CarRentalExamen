@@ -1,0 +1,266 @@
+@page "/customer"
+@attribute [Authorize(Roles = "Customer")]
+@inject NavigationManager Navigation
+@inject ApiClient Api
+
+<PageTitle>Go mobile | Customer</PageTitle>
+
+<div class="customer-hero">
+    <div class="hero-overlay">
+        <header class="brand-bar">
+            <div class="brand-mark">Velocity</div>
+            <div class="brand-sub">Find what's best for you — effortless car rentals.</div>
+            <div class="brand-actions">
+                <button class="ghost-btn" @onclick="@(() => Navigation.NavigateTo("/reservations"))">
+                    <i class="bi bi-heart"></i>
+                </button>
+                <button class="ghost-btn" @onclick="@(() => Navigation.NavigateTo("/reservations"))">
+                    <i class="bi bi-bell"></i>
+                </button>
+                <button class="accent-btn" @onclick="@(() => Navigation.NavigateTo("/reservations"))">Mes réservations</button>
+            </div>
+        </header>
+
+        <div class="hero-copy">
+            <h1>Go mobile.</h1>
+            <p>Find what's best for you — explore and reserve your next ride.</p>
+        </div>
+
+        <div class="search-panel shadow">
+            <div class="vehicle-tabs">
+                <button class="tab active"><i class="bi bi-car-front-fill"></i></button>
+                <button class="tab"><i class="bi bi-bicycle"></i></button>
+                <button class="tab"><i class="bi bi-truck-front"></i></button>
+                <button class="tab"><i class="bi bi-bus-front"></i></button>
+            </div>
+            <div class="search-grid">
+                <div class="form-group">
+                    <label>Marque</label>
+                    <select class="form-control" @bind="filters.Make">
+                        <option value="">Tous</option>
+                        @foreach (var make in makes)
+                        {
+                            <option value="@make">@make</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Modèle</label>
+                    <input class="form-control" placeholder="Tous" @bind="filters.Model" />
+                </div>
+                <div class="form-group">
+                    <label>Prix max. (€/jour)</label>
+                    <input type="number" class="form-control" placeholder="Tous" @bind="filters.MaxDailyPrice" />
+                </div>
+                <div class="form-group">
+                    <label>Année minimum</label>
+                    <input type="number" class="form-control" placeholder="Tous" @bind="filters.MinYear" />
+                </div>
+                <div class="form-group">
+                    <label>Kilométrage max.</label>
+                    <input type="number" class="form-control" placeholder="Tous" @bind="filters.MaxMileage" />
+                </div>
+                <div class="form-group">
+                    <label>Transmission</label>
+                    <select class="form-control">
+                        <option>Tous</option>
+                        <option>Automatique</option>
+                        <option>Manuelle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pays</label>
+                    <select class="form-control">
+                        <option>Tous</option>
+                        <option>France</option>
+                        <option>Allemagne</option>
+                        <option>Espagne</option>
+                        <option>Italie</option>
+                    </select>
+                </div>
+                <div class="form-group submit-group">
+                    <button class="primary-btn" @onclick="ApplyFilters">
+                        <i class="bi bi-search"></i> Voir les offres
+                    </button>
+                </div>
+            </div>
+            <div class="search-footer">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="evOnly" @bind="filters.ElectricOnly" />
+                    <label class="form-check-label" for="evOnly">Voitures électriques</label>
+                </div>
+                <div class="footer-actions">
+                    <button class="link-btn" @onclick="ResetFilters"><i class="bi bi-arrow-counterclockwise"></i> Réinitialiser</button>
+                    <button class="link-btn"><i class="bi bi-sliders"></i> Plus de filtres</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="section-wrap bg-soft">
+    <div class="section-header">
+        <h2>Catégories populaires</h2>
+    </div>
+    <div class="cards-row">
+        @foreach (var cat in popularCategories)
+        {
+            <div class="category-card shadow-sm">
+                <img src="@cat.Image" alt="@cat.Title" class="category-img" />
+                <div class="category-body">
+                    <div class="category-title">@cat.Title</div>
+                    <div class="category-meta">
+                        <span>@cat.Subtitle1</span>
+                        <span>@cat.Subtitle2</span>
+                        <span>@cat.Tag</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="section-wrap">
+    <div class="section-header">
+        <h2>Types de véhicules</h2>
+    </div>
+    <div class="tiles-row">
+        @foreach (var type in vehicleTypes)
+        {
+            <div class="tile">
+                <img src="@type.Image" alt="@type.Title" />
+                <div class="tile-title">@type.Title</div>
+                <div class="tile-sub">@type.Count</div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="section-wrap bg-soft">
+    <div class="section-header">
+        <h2>Marques populaires</h2>
+    </div>
+    <div class="brand-grid">
+        @foreach (var brand in popularBrands)
+        {
+            <div class="brand-cell">
+                <span>@brand</span>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="section-wrap">
+    <div class="section-header">
+        <h2>@filteredCars.Count résultat(s)</h2>
+        <div class="section-actions">
+            <select class="form-select form-select-sm" @bind="sortOption">
+                <option value="price">Prix</option>
+                <option value="year">Année</option>
+                <option value="mileage">Kilométrage</option>
+            </select>
+        </div>
+    </div>
+    <div class="results-grid">
+        @foreach (var car in filteredCars)
+        {
+            <div class="result-card shadow-sm">
+                <div class="result-body">
+                    <div class="result-header">
+                        <div class="result-title">@car.Make @car.Model</div>
+                        <div class="result-price">@car.DailyPrice.ToString("0") € / jour</div>
+                    </div>
+                    <div class="result-meta">
+                        <span>@car.Year</span>
+                        <span>@car.Mileage.ToString("N0") km</span>
+                        <span>@car.PlateNumber</span>
+                    </div>
+                    <div class="result-actions">
+                        <button class="secondary-btn" @onclick="@(() => Navigation.NavigateTo($"/cars/{car.Id}"))">Détails</button>
+                        <button class="primary-btn" @onclick="@(() => Navigation.NavigateTo($"/reserve/{car.Id}"))">Réserver</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<Car> cars = new();
+    private List<Car> filteredCars = new();
+    private FilterModel filters = new();
+    private string sortOption = "price";
+
+    private readonly List<string> makes = new() { "Toyota", "Tesla", "Audi", "BMW", "Mercedes", "Volkswagen", "Kia", "Hyundai" };
+
+    private readonly List<CategoryCard> popularCategories = new()
+    {
+        new("Familiales", "à partir de 2016", "à 150 000 km", "4/5 Portes", "/images/family.jpg"),
+        new("Premières", "à partir de 2010", "à partir de 150 000 km", "Carnet d'entretien", "/images/budget.jpg"),
+        new("Luxe", "à partir de 2018", "à partir de 35 000 €", "Camera + 18", "/images/luxury.jpg")
+    };
+
+    private readonly List<VehicleTypeTile> vehicleTypes = new()
+    {
+        new("Break", "237 579 résultats", "/images/wagon.jpg"),
+        new("Berline", "343 785 résultats", "/images/sedan.jpg"),
+        new("Cabriolet/Roadster", "58 423 résultats", "/images/convertible.jpg"),
+        new("SUV/Off-road", "461 194 résultats", "/images/suv.jpg")
+    };
+
+    private readonly List<string> popularBrands = new()
+    {
+        "Audi","BMW","Cupra","Ford","Hyundai","Kia","Mercedes-Benz","Opel","Skoda","Toyota","Volkswagen","Volvo"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        cars = await Api.GetCarsAsync();
+        filteredCars = cars.ToList();
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredCars = cars.Where(c =>
+            (string.IsNullOrWhiteSpace(filters.Make) || c.Make.Equals(filters.Make, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filters.Model) || c.Model.Contains(filters.Model, StringComparison.OrdinalIgnoreCase)) &&
+            (!filters.MaxDailyPrice.HasValue || c.DailyPrice <= filters.MaxDailyPrice.Value) &&
+            (!filters.MinYear.HasValue || c.Year >= filters.MinYear.Value) &&
+            (!filters.MaxMileage.HasValue || c.Mileage <= filters.MaxMileage.Value) &&
+            (!filters.ElectricOnly || c.Make.Contains("Tesla", StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+
+        filteredCars = sortOption switch
+        {
+            "year" => filteredCars.OrderByDescending(c => c.Year).ToList(),
+            "mileage" => filteredCars.OrderBy(c => c.Mileage).ToList(),
+            _ => filteredCars.OrderBy(c => c.DailyPrice).ToList()
+        };
+    }
+
+    private void ResetFilters()
+    {
+        filters = new FilterModel();
+        ApplyFilters();
+    }
+
+    private record FilterModel
+    {
+        public string? Make { get; set; }
+        public string? Model { get; set; }
+        public decimal? MaxDailyPrice { get; set; }
+        public int? MinYear { get; set; }
+        public int? MaxMileage { get; set; }
+        public bool ElectricOnly { get; set; }
+    }
+
+    private record CategoryCard(string Title, string Subtitle1, string Subtitle2, string Tag, string Image);
+    private record VehicleTypeTile(string Title, string Count, string Image);
+
+    private static string DataImg(string start, string end)
+    {
+        var svg = $"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='{start}'/><stop offset='100%' stop-color='{end}'/></linearGradient></defs><rect width='400' height='200' fill='url(%23g)' rx='24' ry='24'/></svg>";
+        return $"data:image/svg+xml;utf8,{svg}";
+    }
+}

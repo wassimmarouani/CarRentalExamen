@@ -12,6 +12,7 @@ public interface ICarService
     Task<IEnumerable<Car>> GetAllAsync(CarStatus? status = null);
     Task<Car?> GetByIdAsync(int id);
     Task<Car?> GetByIdWithReservationsAsync(int id);
+    Task<IEnumerable<Car>> SearchAsync(CarSearchRequestDto request);
     Task<(bool Success, string? Error, Car? Car)> CreateAsync(CarCreateUpdateDto dto);
     Task<(bool Success, string? Error)> UpdateAsync(int id, CarCreateUpdateDto dto);
     Task<(bool Success, string? Error)> DeleteAsync(int id);

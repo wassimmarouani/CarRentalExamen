@@ -1,0 +1,587 @@
+@page "/reserve/{carId:int}"
+@attribute [Authorize(Roles = "Customer")]
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Reserve Car</PageTitle>
+
+<div class="reserve-shell">
+    @if (isLoadingCar)
+    {
+        <div class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(loadError))
+    {
+        <div class="alert alert-danger m-4">
+            @loadError
+        </div>
+    }
+    else if (car is null)
+    {
+        <div class="container py-5">
+            <div class="empty-state text-center">
+                <h4>Car not found</h4>
+                <p class="text-muted">The car you are looking for is unavailable right now.</p>
+                <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/customer")'>Browse cars</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="reserve-hero">
+            <div class="container">
+                <div class="d-flex align-items-center gap-3">
+                    <img class="hero-thumb" src="@BuildImageUrl(car.ImageUrl)" alt="@($"{car.Make} {car.Model}")" onerror="this.src='/favicon.png';" />
+                    <div>
+                        <div class="eyebrow text-uppercase">Booking</div>
+                        <h1 class="hero-title mb-1">@car.Make @car.Model</h1>
+                        <div class="text-muted">@car.Year • @car.PlateNumber</div>
+                    </div>
+                </div>
+                <div class="price-chip">
+                    <div class="label">from</div>
+                    <div class="price">@car.DailyPrice.ToString("0.00") €</div>
+                    <div class="period">per day</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container py-4">
+            <EditForm Model="formModel" OnValidSubmit="SubmitReservation">
+                <DataAnnotationsValidator />
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <div class="eyebrow text-uppercase">Trip details</div>
+                                    <h4 class="mb-0">Choose your dates and options</h4>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(submitError))
+                            {
+                                <div class="alert alert-danger">@submitError</div>
+                            }
+                            @if (!string.IsNullOrEmpty(quoteError))
+                            {
+                                <div class="alert alert-warning mb-3">@quoteError</div>
+                            }
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Start date</label>
+                                    <InputDate class="form-control" @bind-Value="formModel.StartDate" @onchange="OnSelectionsChanged" min="@MinDate" />
+                                    <ValidationMessage For="@(() => formModel.StartDate)" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">End date</label>
+                                    <InputDate class="form-control" @bind-Value="formModel.EndDate" @onchange="OnSelectionsChanged" min="@MinDate" />
+                                    <ValidationMessage For="@(() => formModel.EndDate)" />
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <div class="eyebrow text-uppercase mb-1">Add-ons</div>
+                                        <h5 class="mb-0">Enhance your trip</h5>
+                                    </div>
+                                    <span class="text-muted small">Optional</span>
+                                </div>
+                                <div class="option-grid">
+                                    @foreach (var option in optionItems)
+                                    {
+                                        <div class="option-card">
+                                            <div>
+                                                <div class="option-name">@option.Name</div>
+                                                <div class="option-desc text-muted">@option.Description</div>
+                                            </div>
+                                            <div class="option-actions">
+                                                <div class="option-price">+@option.PricePerDay.ToString("0.00") € / day</div>
+                                                <InputNumber class="form-control qty-input"
+                                                             Value="option.Quantity"
+                                                             ValueChanged="(int value) => OnQuantityChanged(option, value)"
+                                                             ValueExpression="@(() => option.Quantity)"
+                                                             min="0" />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="summary-card">
+                            <div class="summary-head">
+                                <div>
+                                    <div class="eyebrow text-uppercase">Your car</div>
+                                    <h4 class="mb-0">@car.Make @car.Model</h4>
+                                    <small class="text-muted">Daily rate: @car.DailyPrice.ToString("0.00") €</small>
+                                </div>
+                                <span class="badge bg-light text-dark">@car.Status</span>
+                            </div>
+
+                            <div class="quote-block">
+                                <div class="quote-line">
+                                    <span>Base price</span>
+                                    <strong>@(quote is null ? "—" : quote.BasePrice.ToString("0.00") + " €")</strong>
+                                </div>
+                                <div class="quote-line">
+                                    <span>Options</span>
+                                    <strong>@(quote is null ? "—" : quote.OptionsPrice.ToString("0.00") + " €")</strong>
+                                </div>
+                                <div class="quote-total">
+                                    <div>
+                                        <div class="label">Estimated total</div>
+                                        <small class="text-muted">@((quote?.TotalDays ?? 0) == 0 ? "" : $"{quote?.TotalDays} days")</small>
+                                    </div>
+                                    <div class="price">
+                                        @if (isQuoteLoading)
+                                        {
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        }
+                                        else
+                                        {
+                                            @((quote is null ? "—" : quote.TotalPrice.ToString("0.00")) + " €")
+                                        }
+                                    </div>
+                                </div>
+                                <div class="availability" data-available="@quote?.IsAvailable">
+                                    @if (quote?.IsAvailable == false)
+                                    {
+                                        <span>This car is not available for the selected dates.</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Instant confirmation for your selected dates.</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 btn-lg" disabled="@(!CanSubmit)">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                    <span class="ms-2">Reserving...</span>
+                                }
+                                else
+                                {
+                                    <span>Reserve now</span>
+                                }
+                            </button>
+                            <button type="button" class="btn btn-link w-100 mt-2" @onclick='() => Navigation.NavigateTo("/customer")'>
+                                Back to cars
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+<style>
+    .reserve-shell {
+        background: #0b1220;
+        min-height: 100vh;
+        color: #0f172a;
+    }
+
+    .reserve-hero {
+        padding: 32px 0;
+        background: linear-gradient(120deg, #0ea5e9 0%, #2563eb 50%, #0f172a 100%);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reserve-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 30%),
+                    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.08), transparent 25%),
+                    radial-gradient(circle at 60% 50%, rgba(255, 255, 255, 0.05), transparent 35%);
+        pointer-events: none;
+    }
+
+    .reserve-hero .container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .hero-thumb {
+        width: 88px;
+        height: 88px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        background: #0f172a;
+    }
+
+    .hero-title {
+        font-weight: 700;
+    }
+
+    .price-chip {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 0.75rem;
+        border-radius: 12px;
+        text-align: right;
+        color: #fff;
+        min-width: 140px;
+    }
+
+    .price-chip .label {
+        text-transform: uppercase;
+        font-size: 11px;
+        opacity: 0.75;
+        letter-spacing: 0.05em;
+    }
+
+    .price-chip .price {
+        font-size: 1.35rem;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .price-chip .period {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    .panel {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .option-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .option-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .option-name {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .option-desc {
+        font-size: 0.9rem;
+    }
+
+    .option-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .option-price {
+        font-weight: 600;
+        color: #0ea5e9;
+    }
+
+    .qty-input {
+        width: 90px;
+    }
+
+    .summary-card {
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+    }
+
+    .summary-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .quote-block {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .quote-line {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        color: #cbd5e1;
+    }
+
+    .quote-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        margin-top: 0.5rem;
+        color: #e2e8f0;
+    }
+
+    .quote-total .price {
+        font-size: 1.35rem;
+        font-weight: 700;
+    }
+
+    .availability {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #bbf7d0;
+        font-weight: 600;
+    }
+
+    .availability[data-available="False"] {
+        background: rgba(248, 113, 113, 0.12);
+        color: #fecdd3;
+    }
+
+    .btn-lg {
+        padding: 0.85rem 1.25rem;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    @@media (max-width: 991px) {
+        .reserve-hero .container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .price-chip {
+            width: 100%;
+            text-align: left;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .option-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .option-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int carId { get; set; }
+
+    private Car? car;
+    private string? loadError;
+    private string? submitError;
+    private ReservationCustomerCreateDto formModel = new()
+    {
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Today.AddDays(1)
+    };
+    private List<OptionItem> optionItems = new()
+    {
+        new("GPS Navigation", "Turn-by-turn guidance for new routes", 5),
+        new("Baby Seat", "Safety first for little travelers", 7),
+        new("Full Insurance", "Zero deductible coverage", 15)
+    };
+
+    private ReservationQuoteResponseDto? quote;
+    private bool isLoadingCar = true;
+    private bool isQuoteLoading;
+    private bool isSubmitting;
+    private string? quoteError;
+
+    private string MinDate => DateTime.Today.ToString("yyyy-MM-dd");
+    private bool CanSubmit => !isSubmitting
+        && !isQuoteLoading
+        && car is not null
+        && car.Status == CarStatus.Available
+        && quote is not null
+        && quote.IsAvailable
+        && quoteError is null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        formModel.CarId = carId;
+        await LoadCarAsync();
+    }
+
+    private async Task LoadCarAsync()
+    {
+        try
+        {
+            isLoadingCar = true;
+            car = await Api.GetCarAsync(carId);
+            formModel.CarId = carId;
+            if (car is not null)
+            {
+                await RefreshQuoteAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Unable to load car: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingCar = false;
+        }
+    }
+
+    private async Task OnSelectionsChanged(ChangeEventArgs? _ = null)
+    {
+        await RefreshQuoteAsync();
+    }
+
+    private async Task RefreshQuoteAsync()
+    {
+        quoteError = null;
+        if (!ValidateDates())
+        {
+            quote = null;
+            return;
+        }
+
+        formModel.Options = BuildOptions();
+
+        isQuoteLoading = true;
+        var (result, error) = await Api.GetReservationQuoteAsync(new ReservationQuoteRequestDto
+        {
+            CarId = formModel.CarId,
+            StartDate = formModel.StartDate,
+            EndDate = formModel.EndDate,
+            Options = formModel.Options
+        });
+
+        quote = result;
+        quoteError = error ?? result?.Error;
+        isQuoteLoading = false;
+    }
+
+    private async Task OnQuantityChanged(OptionItem option, int value)
+    {
+        option.Quantity = Math.Max(0, value);
+        await RefreshQuoteAsync();
+    }
+
+    private List<ReservationOptionDto> BuildOptions() => optionItems
+        .Where(o => o.Quantity > 0)
+        .Select(o => new ReservationOptionDto
+        {
+            OptionName = o.Name,
+            PricePerDay = o.PricePerDay,
+            Quantity = o.Quantity
+        }).ToList();
+
+    private bool ValidateDates()
+    {
+        if (formModel.EndDate < formModel.StartDate)
+        {
+            quoteError = "End date must be after start date.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task SubmitReservation()
+    {
+        submitError = null;
+        if (!ValidateDates())
+        {
+            submitError = quoteError;
+            return;
+        }
+
+        formModel.Options = BuildOptions();
+        isSubmitting = true;
+
+        var (success, error) = await Api.CreateMyReservationAsync(formModel);
+        if (success)
+        {
+            Navigation.NavigateTo("/my/reservations");
+            return;
+        }
+
+        submitError = error ?? "We could not create your reservation. Please try again.";
+        isSubmitting = false;
+    }
+
+    private string BuildImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return "/favicon.png";
+        }
+
+        return imageUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? imageUrl
+            : Navigation.ToAbsoluteUri(imageUrl).ToString();
+    }
+
+    private class OptionItem
+    {
+        public OptionItem(string name, string description, decimal pricePerDay)
+        {
+            Name = name;
+            Description = description;
+            PricePerDay = pricePerDay;
+        }
+
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal PricePerDay { get; set; }
+        public int Quantity { get; set; }
+    }
+}

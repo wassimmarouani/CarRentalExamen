@@ -1,5 +1,5 @@
 ﻿@page "/cars"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @inject ApiClient Api
 @inject NavigationManager Navigation
 @using System.Linq
@@ -102,7 +102,7 @@
                             <td>@FormatMileage(car.Mileage)</td>
                             <td>
                                 <div class="row-actions">
-                                    <button class="icon-btn" title="Details" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>
+                                    <button class="icon-btn" title="Details" @onclick='() => Navigation.NavigateTo($"/admin/cars/{car.Id}")'>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path><path d="M12 12l3 2"></path><path d="M12 7v5"></path></svg>
                                     </button>
                                     <button class="icon-btn" title="Edit" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>
@@ -134,7 +134,7 @@
                             <span>@FormatMileage(car.Mileage)</span>
                         </div>
                         <div class="row-actions">
-                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/cars/details/{car.Id}")'>Details</button>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/admin/cars/{car.Id}")'>Details</button>
                             <button class="btn btn-outline-primary btn-sm" @onclick='() => Navigation.NavigateTo($"/cars/edit/{car.Id}")'>Edit</button>
                             <button class="btn btn-outline-danger btn-sm" @onclick='() => AskDelete(car)'>Delete</button>
                         </div>

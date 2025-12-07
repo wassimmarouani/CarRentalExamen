@@ -9,6 +9,7 @@ public interface IAuthService
 {
     Task<AuthResponseDto?> LoginAsync(LoginRequestDto request);
     Task<AuthResponseDto?> RegisterAsync(RegisterRequestDto request);
+    Task<AuthResponseDto?> RegisterCustomerAsync(RegisterCustomerRequestDto request);
     Task<AuthResponseDto?> GetUserByIdAsync(int userId);
     Task<bool> UsernameExistsAsync(string username);
     Task<bool> EmailExistsAsync(string email);

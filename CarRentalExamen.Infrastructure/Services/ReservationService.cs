@@ -275,6 +275,42 @@ public class ReservationService : IReservationService
         return (true, null);
     }
 
+    public async Task<(bool Success, string? Error)> DeleteAsync(int id)
+    {
+        var reservation = await _context.Reservations
+            .Include(r => r.Car)
+            .Include(r => r.Options)
+            .Include(r => r.Payments)
+            .Include(r => r.Return)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (reservation is null)
+        {
+            return (false, "Reservation not found.");
+        }
+
+        if (reservation.Status == ReservationStatus.Active)
+        {
+            return (false, "Cannot delete an active reservation. Complete or cancel it first.");
+        }
+
+        if (reservation.Car is not null && reservation.Car.Status != CarStatus.Maintenance)
+        {
+            reservation.Car.Status = CarStatus.Available;
+        }
+
+        _context.ReservationOptions.RemoveRange(reservation.Options);
+        _context.Payments.RemoveRange(reservation.Payments);
+        if (reservation.Return is not null)
+        {
+            _context.Returns.Remove(reservation.Return);
+        }
+
+        _context.Reservations.Remove(reservation);
+        await _context.SaveChangesAsync();
+        return (true, null);
+    }
+
     private static ReservationDetailDto MapToDetailDto(Reservation reservation)
     {
         return new ReservationDetailDto

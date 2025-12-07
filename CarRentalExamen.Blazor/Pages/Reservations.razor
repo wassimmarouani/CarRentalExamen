@@ -60,6 +60,10 @@
         }
         else
         {
+            @if (!string.IsNullOrWhiteSpace(deleteError))
+            {
+                <div class="alert alert-danger">@deleteError</div>
+            }
             <table class="table-command d-none d-md-table">
                 <thead>
                     <tr>
@@ -91,6 +95,9 @@
                                     <button class="icon-btn danger" title="Cancel" @onclick='() => Cancel(r.Id)'>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path></svg>
                                     </button>
+                                    <button class="icon-btn danger" title="Delete" @onclick='() => AskDelete(r)'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3h6v3"></path></svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -115,6 +122,7 @@
                             <button class="btn btn-outline-secondary btn-sm" @onclick='() => Navigation.NavigateTo($"/reservations/details/{r.Id}")'>Details</button>
                             <button class="btn btn-outline-success btn-sm" @onclick='() => Confirm(r.Id)'>Confirm</button>
                             <button class="btn btn-outline-danger btn-sm" @onclick='() => Cancel(r.Id)'>Cancel</button>
+                            <button class="btn btn-outline-danger btn-sm" @onclick='() => AskDelete(r)'>Delete</button>
                         </div>
                     </div>
                 }
@@ -130,6 +138,20 @@
     </div>
 </div>
 
+@if (showDeleteConfirm && pendingDelete is not null)
+{
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm deletion</h5>
+            <p class="mb-3">Delete reservation <strong>#@pendingDelete!.Id</strong> for <strong>@pendingDelete!.Customer</strong>?</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick="CancelDelete">Cancel</button>
+                <button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<ReservationDetailDto>? reservations;
     private string searchTerm = string.Empty;
@@ -138,6 +160,9 @@
     private int page = 1;
     private const int PageSize = 8;
     private bool isLoading = true;
+    private bool showDeleteConfirm;
+    private ReservationDetailDto? pendingDelete;
+    private string? deleteError;
 
     private readonly List<string> statusChips = new() { "All", "Pending", "Confirmed", "Active", "Completed", "Cancelled" };
 
@@ -209,6 +234,38 @@
     {
         await Api.CancelReservationAsync(id);
         await Load();
+    }
+
+    private void AskDelete(ReservationDetailDto reservation)
+    {
+        pendingDelete = reservation;
+        deleteError = null;
+        showDeleteConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        pendingDelete = null;
+        showDeleteConfirm = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (pendingDelete is null) return;
+
+        var success = await Api.DeleteReservationAsync(pendingDelete.Id);
+        if (!success)
+        {
+            deleteError = "Cannot delete reservation while it is active. Cancel or complete it first.";
+            return;
+        }
+
+        reservations = reservations?.Where(r => r.Id != pendingDelete.Id).ToList();
+        pendingDelete = null;
+        showDeleteConfirm = false;
+
+        var totalPages = TotalPages;
+        if (page > totalPages) page = totalPages;
     }
 
     private void ChangePage(int newPage) => page = newPage;

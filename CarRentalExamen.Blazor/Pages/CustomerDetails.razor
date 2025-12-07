@@ -19,6 +19,10 @@
     }
     else
     {
+        @if (!string.IsNullOrWhiteSpace(deleteError))
+        {
+            <div class="alert alert-danger">@deleteError</div>
+        }
         <div class="entity-hero entity-header">
             <div>
                 <div class="eyebrow text-uppercase">Customer profile</div>
@@ -38,15 +42,16 @@
                 <div class="actions-dropdown">
                     <button class="btn btn-outline-secondary" @onclick='() => ToggleMenu("customer")'>Actions ▾</button>
                     @if (activeMenu == "customer")
-                    {
-                        <div class="actions-dropdown-menu">
-                            <button @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>Edit Profile</button>
-                            <button>Verify Docs</button>
-                            <button class="text-danger">Flag Customer</button>
-                        </div>
-                    }
-                </div>
+                {
+                    <div class="actions-dropdown-menu">
+                        <button @onclick='() => Navigation.NavigateTo($"/customers/edit/{customer.Id}")'>Edit Profile</button>
+                        <button>Verify Docs</button>
+                        <button class="text-danger">Flag Customer</button>
+                        <button class="text-danger" @onclick="AskDeleteCustomer">Delete</button>
+                    </div>
+                }
             </div>
+        </div>
         </div>
 
         <div class="detail-grid">
@@ -135,6 +140,20 @@
     }
 </div>
 
+@if (showDeleteConfirm && customer is not null)
+{
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm deletion</h5>
+            <p class="mb-3">Delete <strong>@customer.FirstName @customer.LastName</strong>? Active reservations must be cancelled first.</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick="() => showDeleteConfirm = false">Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteCustomer">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public int id { get; set; }
     private Customer? customer;
@@ -144,6 +163,8 @@
     private string? activeMenu;
     private string notes = string.Empty;
     private string customerStatus => reservations.Any() ? "Verified" : "Pending";
+    private bool showDeleteConfirm;
+    private string? deleteError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,4 +191,26 @@
     };
 
     private void ToggleMenu(string key) => activeMenu = activeMenu == key ? null : key;
+
+    private void AskDeleteCustomer()
+    {
+        deleteError = null;
+        activeMenu = null;
+        showDeleteConfirm = true;
+    }
+
+    private async Task DeleteCustomer()
+    {
+        if (customer is null) return;
+
+        var success = await Api.DeleteCustomerAsync(customer.Id);
+        if (!success)
+        {
+            deleteError = "Cannot delete customer with active reservations.";
+            showDeleteConfirm = false;
+            return;
+        }
+
+        Navigation.NavigateTo("/customers");
+    }
 }

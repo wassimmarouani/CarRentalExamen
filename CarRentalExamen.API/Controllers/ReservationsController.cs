@@ -101,6 +101,17 @@ public class ReservationsController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var (success, error) = await _reservationService.DeleteAsync(id);
+        if (!success)
+        {
+            return error == "Reservation not found." ? NotFound(error) : BadRequest(error);
+        }
+        return NoContent();
+    }
+
     // Request DTOs for this controller
     public class PickupRequest
     {

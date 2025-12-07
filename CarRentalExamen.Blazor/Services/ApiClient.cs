@@ -176,6 +176,13 @@ public class ApiClient
         return response.IsSuccessStatusCode;
     }
 
+    public async Task<bool> DeleteCustomerAsync(int id)
+    {
+        await EnsureAuthHeaderAsync();
+        var response = await _httpClient.DeleteAsync($"api/customers/{id}");
+        return response.IsSuccessStatusCode;
+    }
+
     public async Task<List<ReservationDetailDto>> GetReservationsAsync()
     {
         await EnsureAuthHeaderAsync();
@@ -206,6 +213,13 @@ public class ApiClient
     {
         await EnsureAuthHeaderAsync();
         var response = await _httpClient.PutAsync($"api/reservations/{id}/cancel", null);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteReservationAsync(int id)
+    {
+        await EnsureAuthHeaderAsync();
+        var response = await _httpClient.DeleteAsync($"api/reservations/{id}");
         return response.IsSuccessStatusCode;
     }
 

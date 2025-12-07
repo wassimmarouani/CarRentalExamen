@@ -15,6 +15,7 @@ public interface IReservationService
     Task<(bool Success, string? Error)> CancelAsync(int id);
     Task<(bool Success, string? Error)> PickupAsync(int id, int? mileage, decimal? fuelLevel);
     Task<(bool Success, string? Error)> CompleteAsync(int id, CompleteReservationRequest request);
+    Task<(bool Success, string? Error)> DeleteAsync(int id);
 }
 
 public class CompleteReservationRequest

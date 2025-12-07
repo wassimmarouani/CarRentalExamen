@@ -20,6 +20,10 @@
     }
     else
     {
+        @if (!string.IsNullOrWhiteSpace(deleteError))
+        {
+            <div class="alert alert-danger">@deleteError</div>
+        }
         <div class="entity-hero entity-header">
             <div>
                 <div class="eyebrow text-uppercase">Booking</div>
@@ -46,6 +50,7 @@
                         <div class="actions-dropdown-menu">
                             <button @onclick='() => Navigation.NavigateTo("/reservations/create")'>Edit</button>
                             <button @onclick="() => showCancelConfirm = true">Cancel</button>
+                            <button class="text-danger" @onclick="() => { activeMenu = null; showDeleteConfirm = true; }">Delete</button>
                             <button>Refund</button>
                             <button>Print contract</button>
                         </div>
@@ -148,6 +153,7 @@
                         <button class="btn btn-outline-success" @onclick="Confirm">Confirm</button>
                         <button class="btn btn-outline-warning" @onclick="Pickup">Pickup</button>
                         <button class="btn btn-outline-danger" @onclick='() => showCancelConfirm = true'>Cancel</button>
+                        <button class="btn btn-outline-danger" @onclick='() => showDeleteConfirm = true'>Delete</button>
                     </div>
                     <div class="audit-hint mt-3">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path></svg>
@@ -208,6 +214,20 @@
     </div>
 }
 
+@if (showDeleteConfirm && reservation is not null)
+{
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <h5>Confirm deletion</h5>
+            <p class="mb-3">Delete reservation <strong>#@reservation.Id</strong>? Active reservations cannot be deleted.</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-outline-secondary" @onclick='() => showDeleteConfirm = false'>Cancel</button>
+                <button class="btn btn-danger" @onclick="DeleteReservation">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public int id { get; set; }
     private ReservationDetailDto? reservation;
@@ -217,7 +237,9 @@
     private string activeTab = "payments";
     private string? activeMenu;
     private bool showCancelConfirm;
+    private bool showDeleteConfirm;
     private string notes = string.Empty;
+    private string? deleteError;
 
     private string? PrimaryCta => GetPrimaryCta(reservation?.Status);
     private decimal ExtraFees => reservation is null ? 0 : Math.Max(0, reservation.TotalPrice - reservation.BasePrice - reservation.OptionsPrice);
@@ -310,5 +332,20 @@
     {
         await Api.CreateReturnAsync(returnModel);
         await Load();
+    }
+
+    private async Task DeleteReservation()
+    {
+        if (reservation is null) return;
+
+        var success = await Api.DeleteReservationAsync(reservation.Id);
+        if (!success)
+        {
+            deleteError = "Cannot delete reservation while it is active. Cancel or complete it first.";
+            showDeleteConfirm = false;
+            return;
+        }
+
+        Navigation.NavigateTo("/reservations");
     }
 }

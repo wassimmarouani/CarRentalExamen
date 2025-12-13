@@ -46,9 +46,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Note: GenericRepository and UnitOfWork are available but controllers use AppDbContext directly
-// If you want to use them, uncomment these lines and refactor controllers
-// builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-// builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure Services - following Dependency Inversion Principle
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();

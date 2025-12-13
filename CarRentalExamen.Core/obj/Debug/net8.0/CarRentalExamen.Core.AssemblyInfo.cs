@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarRentalExamen.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4ab2161121840a87be0d9759013d9d5835e7c89")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eaff64575ef3e9fded016cffb2ea6e56a7366a22")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarRentalExamen.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarRentalExamen.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

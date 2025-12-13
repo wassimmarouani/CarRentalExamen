@@ -1,6 +1,6 @@
 using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -10,20 +10,20 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class DashboardService : IDashboardService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DashboardService(AppDbContext context)
+    public DashboardService(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<DashboardStatsDto> GetStatsAsync()
     {
-        var revenue = await _context.Payments.SumAsync(p => (decimal?)p.Amount) ?? 0;
-        var activeRentals = await _context.Reservations.CountAsync(r => r.Status == ReservationStatus.Active);
-        var availableCars = await _context.Cars.CountAsync(c => c.Status == CarStatus.Available);
+        var revenue = await _unitOfWork.Payments.Query().SumAsync(p => (decimal?)p.Amount) ?? 0;
+        var activeRentals = await _unitOfWork.Reservations.Query().CountAsync(r => r.Status == ReservationStatus.Active);
+        var availableCars = await _unitOfWork.Cars.Query().CountAsync(c => c.Status == CarStatus.Available);
 
-        var rentalsPerMonth = await _context.Reservations
+        var rentalsPerMonth = await _unitOfWork.Reservations.Query()
             .GroupBy(r => new { r.StartDate.Year, r.StartDate.Month })
             .Select(g => new RentalMonthStatDto 
             { 
@@ -35,7 +35,7 @@ public class DashboardService : IDashboardService
             .ThenBy(g => g.Month)
             .ToListAsync();
 
-        var topCars = await _context.Reservations
+        var topCars = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .GroupBy(r => r.CarId)
             .Select(g => new TopCarStatDto

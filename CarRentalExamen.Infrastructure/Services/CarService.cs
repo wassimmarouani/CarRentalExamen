@@ -1,8 +1,8 @@
 using CarRentalExamen.Core.DTOs.Cars;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -12,16 +12,16 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class CarService : ICarService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CarService(AppDbContext context)
+    public CarService(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<Car>> GetAllAsync(CarStatus? status = null)
     {
-        var query = _context.Cars.AsQueryable();
+        var query = _unitOfWork.Cars.Query();
         if (status.HasValue)
         {
             query = query.Where(c => c.Status == status);
@@ -31,12 +31,12 @@ public class CarService : ICarService
 
     public async Task<Car?> GetByIdAsync(int id)
     {
-        return await _context.Cars.FindAsync(id);
+        return await _unitOfWork.Cars.GetByIdAsync(id);
     }
 
     public async Task<Car?> GetByIdWithReservationsAsync(int id)
     {
-        return await _context.Cars
+        return await _unitOfWork.Cars.Query()
             .Include(c => c.Reservations)
             .ThenInclude(r => r.Customer)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -44,7 +44,7 @@ public class CarService : ICarService
 
     public async Task<IEnumerable<Car>> SearchAsync(CarSearchRequestDto request)
     {
-        var query = _context.Cars.AsQueryable();
+        var query = _unitOfWork.Cars.Query();
 
         if (!string.IsNullOrWhiteSpace(request.Make))
         {
@@ -101,14 +101,14 @@ public class CarService : ICarService
             Status = dto.Status
         };
 
-        _context.Cars.Add(car);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Cars.AddAsync(car);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null, car);
     }
 
     public async Task<(bool Success, string? Error)> UpdateAsync(int id, CarCreateUpdateDto dto)
     {
-        var car = await _context.Cars.FindAsync(id);
+        var car = await _unitOfWork.Cars.GetByIdAsync(id);
         if (car is null)
         {
             return (false, "Car not found.");
@@ -128,13 +128,14 @@ public class CarService : ICarService
         car.Mileage = dto.Mileage;
         car.Status = dto.Status;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Cars.Update(car);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> DeleteAsync(int id)
     {
-        var car = await _context.Cars
+        var car = await _unitOfWork.Cars.Query()
             .Include(c => c.Reservations)
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -153,14 +154,14 @@ public class CarService : ICarService
             return (false, "Cannot delete car with active reservations.");
         }
 
-        _context.Cars.Remove(car);
-        await _context.SaveChangesAsync();
+        _unitOfWork.Cars.Delete(car);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> UpdateStatusAsync(int id, CarStatus status)
     {
-        var car = await _context.Cars
+        var car = await _unitOfWork.Cars.Query()
             .Include(c => c.Reservations)
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -179,13 +180,14 @@ public class CarService : ICarService
         }
 
         car.Status = status;
-        await _context.SaveChangesAsync();
+        _unitOfWork.Cars.Update(car);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<bool> PlateNumberExistsAsync(string plateNumber, int? excludeId = null)
     {
-        var query = _context.Cars.Where(c => c.PlateNumber == plateNumber);
+        var query = _unitOfWork.Cars.Query().Where(c => c.PlateNumber == plateNumber);
         if (excludeId.HasValue)
         {
             query = query.Where(c => c.Id != excludeId.Value);

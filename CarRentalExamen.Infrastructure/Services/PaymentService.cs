@@ -1,8 +1,8 @@
 using CarRentalExamen.Core.DTOs.Payments;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -12,11 +12,11 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class PaymentService : IPaymentService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public PaymentService(AppDbContext context)
+    public PaymentService(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<(bool Success, string? Error, Payment? Payment)> CreateAsync(PaymentCreateDto dto)
@@ -26,7 +26,7 @@ public class PaymentService : IPaymentService
             return (false, "Payment amount must be greater than zero.", null);
         }
 
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Payments)
             .Include(r => r.Return)
             .FirstOrDefaultAsync(r => r.Id == dto.ReservationId);
@@ -44,7 +44,7 @@ public class PaymentService : IPaymentService
             Method = dto.Method
         };
 
-        _context.Payments.Add(payment);
+        await _unitOfWork.Payments.AddAsync(payment);
 
         // Calculate payment status
         var totalPaid = reservation.Payments.Sum(p => p.Amount) + dto.Amount;
@@ -57,13 +57,13 @@ public class PaymentService : IPaymentService
             existing.Status = status;
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return (true, null, payment);
     }
 
     public async Task<IEnumerable<Payment>> GetByReservationAsync(int reservationId)
     {
-        return await _context.Payments
+        return await _unitOfWork.Payments.Query()
             .Where(p => p.ReservationId == reservationId)
             .OrderByDescending(p => p.PaidAt)
             .ToListAsync();

@@ -213,11 +213,25 @@
             _ => c.DailyPrice
         });
 
-    private IEnumerable<Car> PagedCars => filteredCars
-        .Skip((page - 1) * PageSize)
-        .Take(PageSize);
+    private IEnumerable<Car> PagedCars
+    {
+        get
+        {
+            var data = filteredCars.ToList();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(data.Count / (double)PageSize));
+            var currentPage = Math.Min(Math.Max(page, 1), totalPages);
+            return data.Skip((currentPage - 1) * PageSize).Take(PageSize);
+        }
+    }
 
-    private int TotalPages => Math.Max(1, (int)Math.Ceiling(filteredCars.Count() / (double)PageSize));
+    private int TotalPages
+    {
+        get
+        {
+            var count = filteredCars.Count();
+            return Math.Max(1, (int)Math.Ceiling(count / (double)PageSize));
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -280,7 +294,8 @@
 
     private void ChangePage(int newPage)
     {
-        page = newPage;
+        var maxPage = TotalPages;
+        page = Math.Min(Math.Max(newPage, 1), maxPage);
     }
 
     private void ShowToast(string message)

@@ -3,7 +3,6 @@ using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
 using CarRentalExamen.Core.Enums;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -13,20 +12,21 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class AuthService : IAuthService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IPasswordHasher _passwordHasher;
 
-    public AuthService(AppDbContext context, IJwtTokenService jwtTokenService, IPasswordHasher passwordHasher)
+    public AuthService(IUnitOfWork unitOfWork, IJwtTokenService jwtTokenService, IPasswordHasher passwordHasher)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _jwtTokenService = jwtTokenService;
         _passwordHasher = passwordHasher;
     }
 
     public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+        var user = await _unitOfWork.Users.Query()
+            .FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             return null;
@@ -46,8 +46,8 @@ public class AuthService : IAuthService
             Role = request.Role
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Users.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
 
         return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user), null);
     }
@@ -73,9 +73,9 @@ public class AuthService : IAuthService
             User = user
         };
 
-        _context.Users.Add(user);
-        _context.Customers.Add(customer);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Users.AddAsync(user);
+        await _unitOfWork.Customers.AddAsync(customer);
+        await _unitOfWork.SaveChangesAsync();
 
         var customerId = customer.Id;
         return CreateAuthResponse(user, _jwtTokenService.GenerateToken(user), customerId);
@@ -83,7 +83,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto?> GetUserByIdAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user is null) return null;
 
         var customerId = await GetCustomerIdAsync(user.Id);
@@ -92,17 +92,17 @@ public class AuthService : IAuthService
 
     public async Task<bool> UsernameExistsAsync(string username)
     {
-        return await _context.Users.AnyAsync(u => u.Username == username);
+        return await _unitOfWork.Users.Query().AnyAsync(u => u.Username == username);
     }
 
     public async Task<bool> EmailExistsAsync(string email)
     {
-        return await _context.Users.AnyAsync(u => u.Email == email);
+        return await _unitOfWork.Users.Query().AnyAsync(u => u.Email == email);
     }
 
     public async Task<bool> AnyUsersExistAsync()
     {
-        return await _context.Users.AnyAsync();
+        return await _unitOfWork.Users.Query().AnyAsync();
     }
 
     private AuthResponseDto CreateAuthResponse(User user, string token, int? customerId)
@@ -120,7 +120,7 @@ public class AuthService : IAuthService
 
     private async Task<int?> GetCustomerIdAsync(int userId)
     {
-        return await _context.Customers
+        return await _unitOfWork.Customers.Query()
             .Where(c => c.UserId == userId)
             .Select(c => (int?)c.Id)
             .FirstOrDefaultAsync();

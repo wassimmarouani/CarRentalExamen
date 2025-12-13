@@ -1,8 +1,8 @@
 using CarRentalExamen.Core.DTOs.Customers;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -12,26 +12,26 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class CustomerService : ICustomerService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CustomerService(AppDbContext context)
+    public CustomerService(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<Customer>> GetAllAsync()
     {
-        return await _context.Customers.AsNoTracking().ToListAsync();
+        return await _unitOfWork.Customers.Query().AsNoTracking().ToListAsync();
     }
 
     public async Task<Customer?> GetByIdAsync(int id)
     {
-        return await _context.Customers.FindAsync(id);
+        return await _unitOfWork.Customers.GetByIdAsync(id);
     }
 
     public async Task<Customer?> GetByUserIdAsync(int userId)
     {
-        return await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+        return await _unitOfWork.Customers.Query().FirstOrDefaultAsync(c => c.UserId == userId);
     }
 
     public async Task<Customer> CreateAsync(CustomerCreateUpdateDto dto)
@@ -46,14 +46,14 @@ public class CustomerService : ICustomerService
             Email = dto.Email
         };
 
-        _context.Customers.Add(customer);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Customers.AddAsync(customer);
+        await _unitOfWork.SaveChangesAsync();
         return customer;
     }
 
     public async Task<(bool Success, string? Error)> UpdateAsync(int id, CustomerCreateUpdateDto dto)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var customer = await _unitOfWork.Customers.GetByIdAsync(id);
         if (customer is null)
         {
             return (false, "Customer not found.");
@@ -66,13 +66,14 @@ public class CustomerService : ICustomerService
         customer.Phone = dto.Phone;
         customer.Email = dto.Email;
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Customers.Update(customer);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> DeleteAsync(int id)
     {
-        var customer = await _context.Customers
+        var customer = await _unitOfWork.Customers.Query()
             .Include(c => c.Reservations)
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -91,14 +92,14 @@ public class CustomerService : ICustomerService
             return (false, "Cannot delete customer with active reservations.");
         }
 
-        _context.Customers.Remove(customer);
-        await _context.SaveChangesAsync();
+        _unitOfWork.Customers.Delete(customer);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<IEnumerable<Reservation>> GetReservationsAsync(int customerId)
     {
-        return await _context.Reservations
+        return await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Where(r => r.CustomerId == customerId)
             .OrderByDescending(r => r.CreatedAt)

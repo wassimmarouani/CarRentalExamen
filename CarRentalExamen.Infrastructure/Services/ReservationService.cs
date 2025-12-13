@@ -1,8 +1,8 @@
 using CarRentalExamen.Core.DTOs.Reservations;
 using CarRentalExamen.Core.Entities;
 using CarRentalExamen.Core.Enums;
+using CarRentalExamen.Core.Interfaces;
 using CarRentalExamen.Core.Interfaces.Services;
-using CarRentalExamen.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarRentalExamen.Infrastructure.Services;
@@ -12,16 +12,16 @@ namespace CarRentalExamen.Infrastructure.Services;
 /// </summary>
 public class ReservationService : IReservationService
 {
-    private readonly AppDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ReservationService(AppDbContext context)
+    public ReservationService(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<ReservationDetailDto>> GetAllAsync()
     {
-        var reservations = await _context.Reservations
+        var reservations = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Customer)
             .Include(r => r.Options)
@@ -35,7 +35,7 @@ public class ReservationService : IReservationService
 
     public async Task<IEnumerable<ReservationDetailDto>> GetByCustomerAsync(int customerId)
     {
-        var reservations = await _context.Reservations
+        var reservations = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Customer)
             .Include(r => r.Options)
@@ -50,7 +50,7 @@ public class ReservationService : IReservationService
 
     public async Task<ReservationDetailDto?> GetByIdAsync(int id)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Customer)
             .Include(r => r.Options)
@@ -113,7 +113,7 @@ public class ReservationService : IReservationService
 
     public async Task<(bool Success, string? Error)> ConfirmAsync(int id)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .FirstOrDefaultAsync(r => r.Id == id);
 
@@ -132,13 +132,13 @@ public class ReservationService : IReservationService
             reservation.Car.Status = CarStatus.Reserved;
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> CancelAsync(int id)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .FirstOrDefaultAsync(r => r.Id == id);
 
@@ -153,13 +153,13 @@ public class ReservationService : IReservationService
             reservation.Car.Status = CarStatus.Available;
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> CancelForCustomerAsync(int id, int customerId)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .FirstOrDefaultAsync(r => r.Id == id && r.CustomerId == customerId);
 
@@ -179,13 +179,13 @@ public class ReservationService : IReservationService
             reservation.Car.Status = CarStatus.Available;
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> PickupAsync(int id, int? mileage, decimal? fuelLevel)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .FirstOrDefaultAsync(r => r.Id == id);
 
@@ -208,13 +208,13 @@ public class ReservationService : IReservationService
             reservation.Car.Status = CarStatus.Rented;
         }
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> CompleteAsync(int id, CompleteReservationRequest request)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Return)
             .FirstOrDefaultAsync(r => r.Id == id);
@@ -288,13 +288,14 @@ public class ReservationService : IReservationService
             reservation.Return.Notes = request.Notes;
         }
 
-        await _context.SaveChangesAsync();
+        _unitOfWork.Reservations.Update(reservation);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     public async Task<(bool Success, string? Error)> DeleteAsync(int id)
     {
-        var reservation = await _context.Reservations
+        var reservation = await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Options)
             .Include(r => r.Payments)
@@ -316,21 +317,21 @@ public class ReservationService : IReservationService
             reservation.Car.Status = CarStatus.Available;
         }
 
-        _context.ReservationOptions.RemoveRange(reservation.Options);
-        _context.Payments.RemoveRange(reservation.Payments);
+        _unitOfWork.ReservationOptions.DeleteRange(reservation.Options);
+        _unitOfWork.Payments.DeleteRange(reservation.Payments);
         if (reservation.Return is not null)
         {
-            _context.Returns.Remove(reservation.Return);
+            _unitOfWork.Returns.Delete(reservation.Return);
         }
 
-        _context.Reservations.Remove(reservation);
-        await _context.SaveChangesAsync();
+        _unitOfWork.Reservations.Delete(reservation);
+        await _unitOfWork.SaveChangesAsync();
         return (true, null);
     }
 
     private async Task<(bool Success, string? Error, Car? Car)> ValidateReservationRequest(int carId, DateTime startDate, DateTime endDate)
     {
-        var car = await _context.Cars.FindAsync(carId);
+        var car = await _unitOfWork.Cars.GetByIdAsync(carId);
         if (car is null)
         {
             return (false, "Car not found.", null);
@@ -348,7 +349,7 @@ public class ReservationService : IReservationService
             return (false, "Start date cannot be in the past.", null);
         }
 
-        var hasOverlap = await _context.Reservations.AnyAsync(r =>
+        var hasOverlap = await _unitOfWork.Reservations.Query().AnyAsync(r =>
             r.CarId == carId &&
             (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Active) &&
             r.StartDate < endDate && startDate < r.EndDate);
@@ -369,7 +370,7 @@ public class ReservationService : IReservationService
             return (false, validation.Error, null);
         }
 
-        var customer = await _context.Customers.FindAsync(customerId);
+        var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
         if (customer is null)
         {
             return (false, "Customer not found.", null);
@@ -399,15 +400,15 @@ public class ReservationService : IReservationService
             }).ToList()
         };
 
-        _context.Reservations.Add(reservation);
-        await _context.SaveChangesAsync();
+        await _unitOfWork.Reservations.AddAsync(reservation);
+        await _unitOfWork.SaveChangesAsync();
 
         return (true, null, reservation);
     }
 
     private async Task<Reservation?> LoadReservationDetail(int reservationId)
     {
-        return await _context.Reservations
+        return await _unitOfWork.Reservations.Query()
             .Include(r => r.Car)
             .Include(r => r.Customer)
             .Include(r => r.Options)

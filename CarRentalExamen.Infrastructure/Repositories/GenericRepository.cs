@@ -25,6 +25,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await _dbSet.FindAsync(id);
     }
 
+    public IQueryable<T> Query()
+    {
+        return _dbSet.AsQueryable();
+    }
+
     public async Task<IEnumerable<T>> FindAsync(System.Linq.Expressions.Expression<Func<T, bool>> predicate)
     {
         return await _dbSet.Where(predicate).ToListAsync();
@@ -43,5 +48,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
+    }
+
+    public void DeleteRange(IEnumerable<T> entities)
+    {
+        _dbSet.RemoveRange(entities);
     }
 }
